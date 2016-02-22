@@ -14,7 +14,7 @@ It also has two helper methods;
 	log.delete()
 */
 
-package Logger
+package logger
 
 import (
 	"os"
@@ -23,7 +23,7 @@ import (
 
 // create an object 'logger' and then use that object to open up files, print to them,
 type Logger struct {
-	file_name 	string
+	File_name 	string
 }
 
 // error function - not really sure if needed
@@ -34,37 +34,43 @@ func check(e error) {
 }
 
 // WRITING METHODS
-func (l Logger) warn(s string) {
+func (l Logger) Warn(s string) {
 	l.log(s, "WARN")
 }
 
-func (l Logger) info(s string) {
+// WRITING METHODS
+func (l Logger) Fatal(s string) {
+	l.log(s, "FATAL")
+}
+
+
+func (l Logger) Info(s string) {
 	l.log(s, "INFO")
 }
 
-func (l Logger) debug(s string) {
+func (l Logger) Debug(s string) {
 	l.log(s, "DEBUG")
 }
 
 // OTHER METHODS
-func (l Logger) clean() {
-	os.Remove(l.file_name)
-	os.Create(l.file_name)
+func (l Logger) Clean() {
+	os.Remove(l.File_name)
+	os.Create(l.File_name)
 }
 
-func (l Logger) delete() {
-	os.Remove(l.file_name)
+func (l Logger) Delete() {
+	os.Remove(l.File_name)
 }
 
 func (l Logger) log(s, typ string) {
 
 	// check if file does not exist, and then create it if that is the case
-	if _, err := os.Stat( l.file_name ); os.IsNotExist(err) {
-		os.Create(l.file_name)
+	if _, err := os.Stat( l.File_name ); os.IsNotExist(err) {
+		os.Create(l.File_name)
 	}
 
 	// open file ( which definitelly exists )
-	f, err := os.OpenFile(l.file_name, os.O_APPEND| os.O_WRONLY, 0600)
+	f, err := os.OpenFile(l.File_name, os.O_APPEND| os.O_WRONLY, 0600)
 
 	if err != nil {
 		panic(err)

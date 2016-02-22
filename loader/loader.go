@@ -129,4 +129,3 @@ func (c *Create) Load() []training_sample {
 
 
 
-
