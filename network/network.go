@@ -108,7 +108,7 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 			if trainingIndex == 0 {
 				totalSamplesTrained = 0;
 			}
-			actual := n.feedForward(trainingSample.Input)
+			actual := n.FeedForward(trainingSample.Input)
 			_error := n.calculateTotalError(actual, trainingSample.Output)
 
 
@@ -200,7 +200,7 @@ func (n *NeuralNetwork) calculateTotalError(actual []float32, output []float32) 
 	return retval
 }
 
-func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
+func (n *NeuralNetwork) FeedForward(trainingSampleInput []float32)[]float32{
 	var actual []float32
 	for neuronLayerIndex, neuronLayer := range n.NeuronLayers {
 		if neuronLayerIndex == 0 {
@@ -216,18 +216,24 @@ func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 				propagation := n.propagate(neuron.InputConnections)
 				bias := n.NeuronLayers[neuronLayerIndex - 1].Bias
 				neuron.output = n.ActivationFunction.Activate(propagation + bias * 1.0)
+				fmt.Println("Neuron " + strconv.FormatFloat(float64(neuron.output), 'E', -1, 32))
+				if neuronLayerIndex == len(n.NeuronLayers) - 1 {
+					actual = append(actual, neuron.output)
+					fmt.Println(strconv.FormatFloat(float64(neuron.output), 'E', -1, 32))
+				}
 			}
 		}
 
 		/**
 		 * we came to the end
 		 */
-		if neuronLayerIndex == len(n.NeuronLayers) - 1 {
+		/*if neuronLayerIndex == len(n.NeuronLayers) - 1 {
 			for _, neuron := range neuronLayer.Neurons {
 				actual = append(actual, neuron.output)
+				fmt.Println(strconv.FormatFloat(float64(neuron.output), 'E', -1, 32))
 				fmt.Println("1==1")
 			}
-		}
+		}*/
 	}
 	return actual
 

@@ -3,6 +3,7 @@ package main
 import (
 	"../network"
 	"fmt"
+	"strconv"
 )
 
 type CallbackReceiver struct{}
@@ -58,15 +59,17 @@ func main() {
 	neuronLayers = append(neuronLayers, & layer3)
 
 	trainingInput := []float32{0.5, 0.5}
-	trainingOutput := []float32{0.5, 0.5}
+	trainingOutput := []float32{0.7, 0.7}
 
 	trainingSample := network.TrainingSample{Input: trainingInput, Output: trainingOutput}
 
 	trainingSamples := []network.TrainingSample{trainingSample}
 
-	neuronNetwork := network.NeuralNetwork{NeuronLayers: neuronLayers, LearningRate: 0.05, TrainingSet: trainingSamples, Precision:0.05, ActivationFunction: new(network.LogisticActivationFunction)}
+	neuronNetwork := network.NeuralNetwork{NeuronLayers: neuronLayers, LearningRate: 0.05, TrainingSet: trainingSamples, Precision:0.01, ActivationFunction: new(network.LogisticActivationFunction)}
 
 	neuronNetwork.TrainOnline(CallbackReceiver{})
+	result := neuronNetwork.FeedForward(trainingInput)
+	fmt.Println("Result: "+strconv.FormatFloat(float64(result[0]), 'E', -1, 32) + " " + strconv.FormatFloat(float64(result[1]), 'E', -1, 32))
 
 }
 
