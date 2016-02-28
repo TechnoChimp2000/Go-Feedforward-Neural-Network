@@ -104,11 +104,11 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 			if trainingIndex == 0 {
 				totalSamplesTrained = 0;
 			}
-			actual := n.feedForward(trainingSample.input)
-			_error := n.calculateTotalError(actual, trainingSample.output)
+			actualOuput := n.feedForward(trainingSample.input)
+			totalError := n.calculateTotalError(actualOuput, trainingSample.output)
 
 
-			if _error < n.precision {
+			if totalError < n.precision {
 				totalSamplesTrained++
 			}else{
 				n.backPropagate(trainingSample.output)
@@ -187,12 +187,12 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
 }
 
 func (n *NeuralNetwork) calculateTotalError(actual []float32, output []float32) float32{
-	var _error float32 = 0.0
+	var retval float32 = 0.0
 	for outputIndex, singleOutput := range output{
 		factor := singleOutput - actual[outputIndex]
-		_error += 0.5 *factor * factor
+		retval += 0.5 *factor * factor
 	}
-	return _error
+	return retval
 }
 
 func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
