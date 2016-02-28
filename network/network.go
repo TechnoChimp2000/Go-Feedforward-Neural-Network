@@ -3,7 +3,7 @@ package network
 import (
 	"math"
 	"strconv"
-	"fmt"
+	//"fmt"
 )
 
 
@@ -26,7 +26,7 @@ func (l *LogisticActivationFunction) Activate (input float32) float32 {
 }
 
 func (l *LogisticActivationFunction) Derivative (input float32) float32 {
-	return (*l).Activate(input) * (1.0 - (*l).Activate(input))
+	return input * (1 - input)
 }
 
 func (l *LogisticActivationFunction) min() float32 {
@@ -53,12 +53,11 @@ type Neuron struct {
 	output                 float32
 
 	InputConnections       []*Connection
-	ConnectedToInNextLayer []Neuron
-	//outputConnections []*Connection
+	ConnectedToInNextLayer []*Neuron
 }
 
 type NeuronLayer struct{
-	Neurons []Neuron
+	Neurons []*Neuron
 	layer   uint8
 	Bias    float32
 }
@@ -195,7 +194,7 @@ func (n *NeuralNetwork) calculateTotalError(actual []float32, output []float32) 
 	var retval float32 = 0.0
 	for outputIndex, singleOutput := range output{
 		factor := singleOutput - actual[outputIndex]
-		retval += 0.5 *factor * factor
+		retval += 0.5 * factor * factor
 	}
 	return retval
 }
@@ -216,24 +215,17 @@ func (n *NeuralNetwork) FeedForward(trainingSampleInput []float32)[]float32{
 				propagation := n.propagate(neuron.InputConnections)
 				bias := n.NeuronLayers[neuronLayerIndex - 1].Bias
 				neuron.output = n.ActivationFunction.Activate(propagation + bias * 1.0)
-				fmt.Println("Neuron " + strconv.FormatFloat(float64(neuron.output), 'E', -1, 32))
+
+				/**
+				 * we came to the end
+				 */
 				if neuronLayerIndex == len(n.NeuronLayers) - 1 {
 					actual = append(actual, neuron.output)
-					fmt.Println(strconv.FormatFloat(float64(neuron.output), 'E', -1, 32))
+					//fmt.Println(strconv.FormatFloat(float64(neuron.output), 'E', -1, 32))
 				}
 			}
 		}
 
-		/**
-		 * we came to the end
-		 */
-		/*if neuronLayerIndex == len(n.NeuronLayers) - 1 {
-			for _, neuron := range neuronLayer.Neurons {
-				actual = append(actual, neuron.output)
-				fmt.Println(strconv.FormatFloat(float64(neuron.output), 'E', -1, 32))
-				fmt.Println("1==1")
-			}
-		}*/
 	}
 	return actual
 

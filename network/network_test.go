@@ -3,6 +3,7 @@ package network
 import (
 	"testing"
 	"fmt"
+	"strconv"
 )
 
 type CallbackReceiver struct{}
@@ -64,9 +65,12 @@ func TestSimpleNN(t *testing.T){
 
 	trainingSamples := []TrainingSample{trainingSample}
 
-	neuronNetwork := NeuralNetwork{NeuronLayers: neuronLayers, LearningRate: 0.5, TrainingSet: trainingSamples, Precision:0.05, ActivationFunction: new(LogisticActivationFunction)}
+	neuronNetwork := NeuralNetwork{NeuronLayers: neuronLayers, LearningRate: 0.02, TrainingSet: trainingSamples, Precision:0.0003, ActivationFunction: new(LogisticActivationFunction)}
 
 	neuronNetwork.TrainOnline(CallbackReceiver{})
+
+	result := neuronNetwork.FeedForward(trainingInput)
+	fmt.Println("network test result: "+strconv.FormatFloat(float64(result[0]), 'E', -1, 32) + " " + strconv.FormatFloat(float64(result[1]), 'E', -1, 32))
 
 
 
