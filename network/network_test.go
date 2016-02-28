@@ -8,7 +8,7 @@ import (
 
 type CallbackReceiver struct{}
 func (c CallbackReceiver) ReceiveInfo(info string){
-	fmt.Println(info)
+	//fmt.Println(info)
 
 }
 
@@ -60,6 +60,7 @@ func TestSimpleNN(t *testing.T){
 
 	trainingInput := []float32{0.05, 0.10}
 	trainingOutput := []float32{0.01, 0.99}
+	//trainingOutput := []float32{0.5, 0.5}
 
 	trainingSample := TrainingSample{Input: trainingInput, Output: trainingOutput}
 

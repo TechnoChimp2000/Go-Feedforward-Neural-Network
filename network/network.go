@@ -3,6 +3,7 @@ package network
 import (
 	"math"
 	"strconv"
+	"sync"
 	//"fmt"
 )
 
@@ -43,7 +44,6 @@ type Connection struct{
 	From          *Neuron
 	To            *Neuron
 	Weight        float32
-	updatedWeight float32
 
 }
 
@@ -145,7 +145,7 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
 					var factor2 float32 = n.ActivationFunction.Derivative(neuron.output)
 					var factor3 float32 = inputConnection.From.output
 					var gradient float32 = factor1 * factor2 * factor3
-					inputConnection.updatedWeight = inputConnection.Weight - (n.LearningRate * gradient)
+					inputConnection.Weight = inputConnection.Weight - (n.LearningRate * gradient)
 				}
 
 			}
@@ -165,7 +165,7 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
 					factor2 := n.ActivationFunction.Derivative(neuron.output)
 					factor3 := inputConnection.From.output
 					gradient := factor1 * factor2 * factor3
-					inputConnection.updatedWeight = inputConnection.Weight - (n.LearningRate * gradient)
+					inputConnection.Weight = inputConnection.Weight - (n.LearningRate * gradient)
 				}
 
 			}
@@ -175,7 +175,7 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
 	/**
 	 * finally update weights
 	 */
-	for neuronLayerIndex, neuronLayer := range n.NeuronLayers {
+	/*for neuronLayerIndex, neuronLayer := range n.NeuronLayers {
 		if neuronLayerIndex == 0 {
 			continue
 		}
@@ -185,7 +185,7 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
 			}
 		}
 
-	}
+	}*/
 
 
 }
@@ -211,10 +211,17 @@ func (n *NeuralNetwork) FeedForward(trainingSampleInput []float32)[]float32{
 			}
 		} else {
 			for _, neuron := range neuronLayer.Neurons {
-				//TODO following three lines could occur in goroutines
-				propagation := n.propagate(neuron.InputConnections)
-				bias := n.NeuronLayers[neuronLayerIndex - 1].Bias
-				neuron.output = n.ActivationFunction.Activate(propagation + bias * 1.0)
+
+				var wg sync.WaitGroup
+
+				wg.Add(len(neuronLayer.Neurons))
+
+				go func() {
+					defer wg.Done()
+					n.calculateNeuronOutput(neuron, neuronLayerIndex)
+				}()
+
+
 
 				/**
 				 * we came to the end
@@ -229,6 +236,12 @@ func (n *NeuralNetwork) FeedForward(trainingSampleInput []float32)[]float32{
 	}
 	return actual
 
+}
+
+func (n *NeuralNetwork) calculateNeuronOutput(neuron *Neuron, neuronLayerIndex int){
+	propagation := n.propagate(neuron.InputConnections)
+	bias := n.NeuronLayers[neuronLayerIndex - 1].Bias
+	neuron.output = n.ActivationFunction.Activate(propagation + bias * 1.0)
 }
 
 
