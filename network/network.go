@@ -1,6 +1,9 @@
 package network
 
-import "math"
+import (
+	"math"
+        "strconv"
+)
 
 
 // interfaces
@@ -36,9 +39,9 @@ func (l *LogisticActivationFunction) max() float32 {
 
 // structures
 type Connection struct{
-	from Neuron
-	to Neuron
-	weight float32
+	From          Neuron
+	To            Neuron
+	Weight        float32
 	updatedWeight float32
 
 }
@@ -46,46 +49,46 @@ type Connection struct{
 
 type Neuron struct {
 	// data
-	output float32
+	output                 float32
 
-	inputConnections []*Connection
-	connectedToInNextLayer []Neuron
+	InputConnections       []*Connection
+	ConnectedToInNextLayer []Neuron
 	//outputConnections []*Connection
 }
 
 type NeuronLayer struct{
-	neurons []Neuron
-	layer uint8
-	bias float32
+	Neurons []Neuron
+	layer   uint8
+	Bias    float32
 }
 
 
 type TrainingSample struct{
-	input []float32
-	output []float32
+	Input  []float32
+	Output []float32
 }
 
 
 type NeuralNetwork struct{
-	neuronLayers []*NeuronLayer
-	learningRate float32
-	trainingSet []TrainingSample
+	NeuronLayers       []*NeuronLayer
+	LearningRate       float32
+	TrainingSet        []TrainingSample
 
 	//precision tells how precise network should  be
 	//that is error should be lesser than precision
 	//typical value is 0.05
-	precision float32
+	Precision          float32
 
 
 	// functions
-	activationFunction ActivationFunction
+	ActivationFunction ActivationFunction
 
 }
 
 func (w *NeuralNetwork) propagate(inputConnections []*Connection) float32{
 	var result float32 = 0.0
 	for _,inputConnection := range inputConnections{
-		result += inputConnection.from.output + inputConnection.weight
+		result += inputConnection.From.output + inputConnection.Weight
 	}
 	return result
 }
@@ -99,27 +102,28 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 	//TODO validate input
 	totalSamplesTrained := 0
 	for {
-		for trainingIndex, trainingSample := range n.trainingSet {
+		for trainingIndex, trainingSample := range n.TrainingSet {
 
 			if trainingIndex == 0 {
 				totalSamplesTrained = 0;
 			}
-			actual := n.feedForward(trainingSample.input)
-			_error := n.calculateTotalError(actual, trainingSample.output)
+			actual := n.feedForward(trainingSample.Input)
+			_error := n.calculateTotalError(actual, trainingSample.Output)
 
 
-			if _error < n.precision {
+			if _error < n.Precision {
 				totalSamplesTrained++
 			}else{
-				n.backPropagate(trainingSample.output)
+				n.backPropagate(trainingSample.Output)
 			}
 
 			if callback != nil {
-				//callback.ReceiveInfo("For training sample with index: " + trainingIndex + " error is: " + _error + ". Total samples trained are: " + totalSamplesTrained)
+				callback.ReceiveInfo("For training sample with index: " + strconv.Itoa(trainingIndex) +
+				" error is: " + strconv.FormatFloat(float64(_error), 'E', -1, 32) + ". Total samples trained are: " + strconv.Itoa(totalSamplesTrained))
 			}
 
 		}
-		if totalSamplesTrained == len(n.trainingSet){
+		if totalSamplesTrained == len(n.TrainingSet){
 			break;
 		}
 	}
@@ -128,40 +132,40 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 }
 
 func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
-	for i := len(n.neuronLayers) - 1; i > 0; i-- {
+	for i := len(n.NeuronLayers) - 1; i > 0; i-- {
 		/**
 		 * processing last layer of neuron connections
 		 */
-		if(i == len(n.neuronLayers) - 1){
-			for neuronIndex, neuron := range n.neuronLayers[i].neurons{
-				for _, inputConnection := range neuron.inputConnections{
+		if(i == len(n.NeuronLayers) - 1){
+			for neuronIndex, neuron := range n.NeuronLayers[i].Neurons {
+				for _, inputConnection := range neuron.InputConnections {
 
 					//TODO following 5 line could occur in goroutine
 					var factor1 float32 = neuron.output - trainingSampleOutput[neuronIndex]
-					var factor2 float32 = n.activationFunction.Derivative(neuron.output)
-					var factor3 float32 = inputConnection.from.output
+					var factor2 float32 = n.ActivationFunction.Derivative(neuron.output)
+					var factor3 float32 = inputConnection.From.output
 					var gradient float32 = factor1 * factor2 * factor3
-					inputConnection.updatedWeight = inputConnection.weight - (n.learningRate * gradient)
+					inputConnection.updatedWeight = inputConnection.Weight - (n.LearningRate * gradient)
 				}
 
 			}
 		}else{
-			for _, neuron := range n.neuronLayers[i].neurons{
-				for _, inputConnection := range neuron.inputConnections{
+			for _, neuron := range n.NeuronLayers[i].Neurons {
+				for _, inputConnection := range neuron.InputConnections {
 
 					//TODO following lines could occur in goroutine
 					var factor1 float32 = 0.0
-					for _, neuronInNextLayer := range neuron.connectedToInNextLayer{
+					for _, neuronInNextLayer := range neuron.ConnectedToInNextLayer {
 						//TODO factor11 and factor12 have already been calculated in previous  steps
-						var factor11 float32 = n.activationFunction.Derivative(neuronInNextLayer.output)
+						var factor11 float32 = n.ActivationFunction.Derivative(neuronInNextLayer.output)
 						var factor12 float32 = neuron.output
 						factor1 += factor11 * factor12
 					}
 
-					factor2 := n.activationFunction.Derivative(neuron.output)
-					factor3 := inputConnection.from.output
+					factor2 := n.ActivationFunction.Derivative(neuron.output)
+					factor3 := inputConnection.From.output
 					gradient := factor1 * factor2 * factor3
-					inputConnection.updatedWeight = inputConnection.weight - (n.learningRate * gradient)
+					inputConnection.updatedWeight = inputConnection.Weight - (n.LearningRate * gradient)
 				}
 
 			}
@@ -171,13 +175,13 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
 	/**
 	 * finally update weights
 	 */
-	for neuronLayerIndex, neuronLayer := range n.neuronLayers{
+	for neuronLayerIndex, neuronLayer := range n.NeuronLayers {
 		if neuronLayerIndex == 0 {
 			continue
 		}
-		for _, neuron := range  neuronLayer.neurons{
-			for _, inputConnection := range neuron.inputConnections{
-				inputConnection.weight = inputConnection.updatedWeight
+		for _, neuron := range  neuronLayer.Neurons {
+			for _, inputConnection := range neuron.InputConnections {
+				inputConnection.Weight = inputConnection.updatedWeight
 			}
 		}
 
@@ -197,28 +201,28 @@ func (n *NeuralNetwork) calculateTotalError(actual []float32, output []float32) 
 
 func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 	var actual []float32
-	for neuronLayerIndex, neuronLayer := range n.neuronLayers{
+	for neuronLayerIndex, neuronLayer := range n.NeuronLayers {
 		if neuronLayerIndex == 0 {
 			/**
 			 * first layer of neurons just passes through trainingSampleInput
 			 */
 			for trainingInputIndex, trainingValue := range trainingSampleInput{
-				neuronLayer.neurons[trainingInputIndex].output = trainingValue
+				neuronLayer.Neurons[trainingInputIndex].output = trainingValue
 			}
 		} else {
-			for _, neuron := range neuronLayer.neurons{
+			for _, neuron := range neuronLayer.Neurons {
 				//TODO following three lines could occur in goroutines
-				propagation := n.propagate(neuron.inputConnections)
-				bias := n.neuronLayers[neuronLayerIndex - 1].bias
-				neuron.output = n.activationFunction.Activate(propagation + bias * 1.0)
+				propagation := n.propagate(neuron.InputConnections)
+				bias := n.NeuronLayers[neuronLayerIndex - 1].Bias
+				neuron.output = n.ActivationFunction.Activate(propagation + bias * 1.0)
 			}
 		}
 
 		/**
 		 * we came to the end
 		 */
-		if neuronLayerIndex == len(n.neuronLayers) - 1 {
-			for _, neuron := range neuronLayer.neurons{
+		if neuronLayerIndex == len(n.NeuronLayers) - 1 {
+			for _, neuron := range neuronLayer.Neurons {
 				actual = append(actual, neuron.output)
 			}
 		}
