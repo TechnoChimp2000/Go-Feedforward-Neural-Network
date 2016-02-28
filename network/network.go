@@ -50,7 +50,8 @@ type Neuron struct {
 	output float32
 
 	inputConnections []*Connection
-	outputConnections []*Connection
+	connectedToInNextLayer []Neuron
+	//outputConnections []*Connection
 }
 
 type NeuronLayer struct{
@@ -153,11 +154,11 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
 
 					//TODO following lines could occur in goroutine
 					factor1 := 0
-					for _, outputConnection := range neuron.outputConnections{
+					for _, neuronInNextLayer := range neuron.connectedToInNextLayer{
 
 						//TODO factor11 and factor12 have already been calculated in previous  steps
-						factor11 := n.activationFunction.Derivative(outputConnection.to.output)
-						factor12 := outputConnection.from.output
+						factor11 := n.activationFunction.Derivative(neuronInNextLayer.output)
+						factor12 := neuron.output
 						factor1 += factor11 * factor12
 
 					}
