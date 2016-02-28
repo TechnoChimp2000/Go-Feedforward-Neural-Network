@@ -1,5 +1,5 @@
 package network
-
+/*
 type HintonNetwork struct {
 	layers []int
 
@@ -59,7 +59,7 @@ func (h *HintonNetwork) feedForward(input []float32) []float64{
 
 	return h.hintonWeights
 }
-
+*/
 /*func (h *HintonNetwork) addBiases() [][]float64{
 	//TODO: input validation
 
