@@ -60,6 +60,7 @@ type NeuronLayer struct{
 	Neurons []*Neuron
 	layer   uint8
 	Bias    float32
+	NumberOfInputConnections int
 }
 
 
@@ -137,15 +138,25 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
 		 * processing last layer of neuron connections
 		 */
 		if(i == len(n.NeuronLayers) - 1){
+
+			/*var wg sync.WaitGroup
+
+			wg.Add(n.NeuronLayers[i].NumberOfInputConnections)*/
+
+
 			for neuronIndex, neuron := range n.NeuronLayers[i].Neurons {
 				for _, inputConnection := range neuron.InputConnections {
 
-					//TODO following 5 line could occur in goroutine
-					var factor1 float32 = neuron.output - trainingSampleOutput[neuronIndex]
-					var factor2 float32 = n.ActivationFunction.Derivative(neuron.output)
-					var factor3 float32 = inputConnection.From.output
-					var gradient float32 = factor1 * factor2 * factor3
-					inputConnection.Weight = inputConnection.Weight - (n.LearningRate * gradient)
+					//TODO following 5 lines could occur in goroutine
+
+
+
+
+/*
+					go func() {
+						defer wg.Done()*/
+						n.calculateModifiedWeightOnLastConnectionLayer(neuron, inputConnection, trainingSampleOutput[neuronIndex])
+					//}()
 				}
 
 			}
@@ -172,22 +183,14 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32){
 		}
 	}
 
-	/**
-	 * finally update weights
-	 */
-	/*for neuronLayerIndex, neuronLayer := range n.NeuronLayers {
-		if neuronLayerIndex == 0 {
-			continue
-		}
-		for _, neuron := range  neuronLayer.Neurons {
-			for _, inputConnection := range neuron.InputConnections {
-				inputConnection.Weight = inputConnection.updatedWeight
-			}
-		}
+}
 
-	}*/
-
-
+func (n *NeuralNetwork) calculateModifiedWeightOnLastConnectionLayer(neuron *Neuron, inputConnection *Connection, target float32){
+	var factor1 float32 = neuron.output - target
+	var factor2 float32 = n.ActivationFunction.Derivative(neuron.output)
+	var factor3 float32 = inputConnection.From.output
+	var gradient float32 = factor1 * factor2 * factor3
+	inputConnection.Weight = inputConnection.Weight - (n.LearningRate * gradient)
 }
 
 func (n *NeuralNetwork) calculateTotalError(actual []float32, output []float32) float32{

@@ -13,9 +13,9 @@ func (c CallbackReceiver) ReceiveInfo(info string){
 }
 
 func main() {
-	layer1 := network.CreateNetworkLayer(2, 0.3)
-	layer2 := network.CreateNetworkLayer(2, 0.6)
-	layer3 := network.CreateNetworkLayer(2, 0.0)
+	layer1 := network.CreateNeuronLayer(2, 2, 0.3)
+	layer2 := network.CreateNeuronLayer(2, 4, 0.6)
+	layer3 := network.CreateNeuronLayer(2, 4, 0.0)
 
 	for _,neuronInLayer1 := range layer1.Neurons{
 		for _, neuronInLayer2 := range layer2.Neurons{

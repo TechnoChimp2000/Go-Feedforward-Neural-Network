@@ -13,9 +13,9 @@ func (c CallbackReceiver) ReceiveInfo(info string){
 }
 
 func TestSimpleNN(t *testing.T){
-	layer1 := CreateNetworkLayer(2, 0.35)
-	layer2 := CreateNetworkLayer(2, 0.60)
-	layer3 := CreateNetworkLayer(2, 0)
+	layer1 := CreateNeuronLayer(2, 2,  0.35)
+	layer2 := CreateNeuronLayer(2, 4, 0.60)
+	layer3 := CreateNeuronLayer(2, 4, 0)
 
 	for _,neuronInLayer1 := range layer1.Neurons {
 		for _, neuronInLayer2 := range layer2.Neurons {
