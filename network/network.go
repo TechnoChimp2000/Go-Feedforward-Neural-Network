@@ -2,7 +2,8 @@ package network
 
 import (
 	"math"
-        "strconv"
+	"strconv"
+	"fmt"
 )
 
 
@@ -39,8 +40,8 @@ func (l *LogisticActivationFunction) max() float32 {
 
 // structures
 type Connection struct{
-	From          Neuron
-	To            Neuron
+	From          *Neuron
+	To            *Neuron
 	Weight        float32
 	updatedWeight float32
 
@@ -88,7 +89,7 @@ type NeuralNetwork struct{
 func (w *NeuralNetwork) propagate(inputConnections []*Connection) float32{
 	var result float32 = 0.0
 	for _,inputConnection := range inputConnections{
-		result += inputConnection.From.output + inputConnection.Weight
+		result += inputConnection.From.output * inputConnection.Weight
 	}
 	return result
 }
@@ -107,19 +108,11 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 			if trainingIndex == 0 {
 				totalSamplesTrained = 0;
 			}
-<<<<<<< HEAD
-			actualOuput := n.feedForward(trainingSample.input)
-			totalError := n.calculateTotalError(actualOuput, trainingSample.output)
-
-
-			if totalError < n.precision {
-=======
 			actual := n.feedForward(trainingSample.Input)
 			_error := n.calculateTotalError(actual, trainingSample.Output)
 
 
 			if _error < n.Precision {
->>>>>>> 1afea1827c636814176215fedae8716c5ad31a1a
 				totalSamplesTrained++
 			}else{
 				n.backPropagate(trainingSample.Output)
@@ -232,9 +225,9 @@ func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 		if neuronLayerIndex == len(n.NeuronLayers) - 1 {
 			for _, neuron := range neuronLayer.Neurons {
 				actual = append(actual, neuron.output)
+				fmt.Println("1==1")
 			}
 		}
-
 	}
 	return actual
 
