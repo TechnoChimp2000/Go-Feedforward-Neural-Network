@@ -1,131 +1,178 @@
-/*
-This is the file loader. You can load the training data and labels into it by doing the following:
-
-	path_imgs := `c:\Programing\feedforward-neural-network\data\t10k-images.idx3-ubyte`
-	path_labels := `c:\Programing\feedforward-neural-network\data\t10k-labels.idx1-ubyte`
-
-	data_handle := Loader.Create{
-		Filepath_image:path_imgs,
-		Filepath_labels:path_labels,
-	}
-
-	data := data_handle.Load()
-	fmt.Println(data[1].Label)   // label of example 2, type uint16
-	fmt.Println(data[1].Picture) // pointer to image 2, which is a slice of []byte. Each element is an 8bit integer, value between 0 and 255.
-	fmt.Println(data_handle.Header_img.Magic_number) //
-
-Data structure:
-Create stores image file and label file headers after Load() has been invoked. Check below to see how to access specific items.
-
-*/
-
-package Loader
+package loader
 
 import (
-	"os"
+	"io/ioutil"
 	"fmt"
 	"encoding/binary"
-	"io"
 
 )
 
+// this is a generic IDX loader that reads a file and returns it in a slice. Example of operation:
+/*
+
+path_images_train := `c:\Programing\feedforward-neural-network\data\train-images.idx3-ubyte`
+path_labels_train := `c:\Programing\feedforward-neural-network\data\train-labels.idx1-ubyte`
+
+dh_images := &loader.Create{
+	Filepath:path_images_train,
+}
+
+dh_labels := &loader.Create{
+	Filepath:path_labels_train,
+}
+
+dh_images.Load()
+dh_labels.Load()
+
+fmt.Println("data images header: ", dh_images.Header);
+fmt.Println("data length: ", len(dh_images.Data));
+fmt.Println("data point length: ", len(dh_images.Data[0]));
+
+fmt.Println("data labels header: ", dh_labels.Header);
+fmt.Println("data length: ", len(dh_labels.Data));
+fmt.Println("data point length: ", len(dh_labels.Data[0]));
+
+digit_count	:= uint32(10)
+train_data 	:= loader.CreateTrainingSet( dh_images, dh_labels , digit_count)
+
+*/
+// data structures
 type Create struct {
-	Filepath_image	string
-	Filepath_labels	string
-	Header_img	Image_header
-	Header_lbl	Label_header
+	Filepath string
+	Header   Header
+	Data	[]DataPoint
 }
 
-type Image_header struct {
-	Magic_number	uint32
-	Num_of_items	uint32
-	Num_of_rows	uint32
-	Num_of_columns	uint32
+type Header struct {
+	Magic_number		byte
+	Num_of_dimensions	int
+	Num_of_items		[]uint32
 }
 
-type Label_header struct {
-	Magic_number	uint32
-	Num_of_items	uint32
+type DataPoint []uint32
+
+type TrainingSample struct {
+	Input 	[]uint32
+	Output	[]uint32
 }
 
-type training_sample struct {
-	Picture *[]byte
-	Label	uint16
-}
+// functions
+func (c *Create) Load() ( output float64 ) {
 
-
-// load the 2 files and return them in :: training data []training_sample ::
-// I make Load() receive the reference because I would like to change the original Create struct, specifically add its image and label headers
-func (c *Create) Load() []training_sample {
-
-	// PART 1 - Open two files
-	file_image, err := os.Open(c.Filepath_image)  // file is a pointer to the file, or *File
+	dh, err := ioutil.ReadFile( c.Filepath )
 	if err != nil {
 		fmt.Sprintf("File failed to be opened. Error: %v", err)
 		panic(err)
 	}
 
-	file_label, err := os.Open(c.Filepath_labels)  // file is a pointer to the file, or *File
-	if err != nil {
-		fmt.Sprintf("File failed to be opened. Error: %v", err)
+	// Read first four bytes for the header that have to be 0
+	//0-1
+	if dh[0] != 0 || dh[1] != 0 {
 		panic(err)
 	}
 
-	defer file_image.Close()
-	defer file_label.Close()
+	//2-3
+	c.Header.Magic_number		= dh[2]
+	c.Header.Num_of_dimensions 	= int(dh[3])
 
-	// Image HEADER
-	img_header := make([]byte, 16)
-	file_image.Read(img_header);
+	c.Header.Num_of_items = make([]uint32, c.Header.Num_of_dimensions)
 
-	c.Header_img.Magic_number 	= binary.BigEndian.Uint32(img_header[0:4])
-	c.Header_img.Num_of_items 	= binary.BigEndian.Uint32(img_header[4:8])
-	c.Header_img.Num_of_rows 	= binary.BigEndian.Uint32(img_header[8:12])
-	c.Header_img.Num_of_columns	= binary.BigEndian.Uint32(img_header[12:16])
+	// collect number of dimensions and store them into a slice as part of the header
+	for i := 0; i< c.Header.Num_of_dimensions; i++ {
 
-	fmt.Println(c.Header_img.Num_of_items)
-	//var training_data []byte -- make a []slice for all the training examples
-	training_data := make([]training_sample, c.Header_img.Num_of_items + 1)
+		offset          := 4
+		start_index	:= offset + i*4
+		end_index	:= offset + start_index
 
-	// Label HEADER
-	label_header := make([]byte,8)
-	file_label.Read(label_header)
+		fmt.Println( binary.BigEndian.Uint32(dh[start_index:end_index]) )
+		c.Header.Num_of_items[i] = binary.BigEndian.Uint32(dh[start_index:end_index])
 
-	c.Header_lbl.Magic_number 	= binary.BigEndian.Uint32(label_header[0:4])
-	c.Header_lbl.Num_of_items	= binary.BigEndian.Uint32(label_header[4:8])
+	}
 
-	//
-	pixls 	:= c.Header_img.Num_of_rows * c.Header_img.Num_of_columns // number of pixels
-	image	:= make([]byte, pixls) //
+	// process data until the end of file
+	offset_body := 4 + c.Header.Num_of_dimensions * 4
+	//fmt.Println("body offset", offset_body)
 
-	// read all the labels into one big []byte
-	labels := make([]byte, c.Header_lbl.Num_of_items + 1)
-	file_label.ReadAt(labels,8)
+	size := dataSize(c.Header.Num_of_items)
+	//fmt.Println("size: ", size)
 
-	// Now loop through the data and populate the training_data
-	// Let's loop through image data, cause it's bigger
-	var j int //j will be the position of an image in training data - initialized at 0 by default
+	var data_point DataPoint
+	pixel_counter 	:= uint32(0)
 
-	// infinite loop. Exits when the EOF is reaches
-	for i := 16; i >= 0; i = i + int(pixls) {
+	var dp = make([]uint32, size)
+	//fmt.Sprintf("%T ", data_point)
 
-		count, err := file_image.ReadAt(image, int64(i))
-		lbl := uint16(labels[j])
+	for i := range dh {
 
-		// populate training_data with training_sample structs
-		ts := training_sample{ &image, lbl }
-		training_data[j] = ts
-		j++
+		// skip the header
+		if i < offset_body {
+			continue
+		}
 
-		//
-		if err == io.EOF {
-			fmt.Println("File read successfully.")
-			fmt.Println(count)
-			break
+		data_point 		= append(data_point, uint32(dh[i]))
+		dp[pixel_counter] 	= uint32(dh[i])
+		pixel_counter 		+= 1
+
+		// at the end of each item, store it to c.Data
+		if pixel_counter == size {
+			c.Data 		= append(c.Data, data_point)
+			pixel_counter 	= uint32(0)
+			data_point 	= nil
 		}
 	}
+	return output
+}
+
+// if needed we can in the future map the magic number to a stated type
+func (c *Create ) MagicNumberMap() {
+
+}
+
+// you feed it a slice, it skips the first element, and multiplies the rest with itself to get the total number of elements in the data point
+func dataSize( num_of_items []uint32  ) ( size uint32 ) {
+	size = 1
+
+	for i := 1; i<len(num_of_items); i++ {
+		size *= num_of_items[i]
+	}
+	return size
+}
+
+
+
+func CreateTrainingSet ( X *Create, Y *Create, digit_count uint32 ) ( training_data []TrainingSample ) {
+	// validate the two sets ( do they have the same number of items )
+
+	if X.Header.Num_of_items[0] != Y.Header.Num_of_items[0] {
+		panic("Number of items mismatch")
+	}
+
+	// loop
+	training_data = make([]TrainingSample, X.Header.Num_of_items[0])
+
+	for i := range training_data {
+
+		var Y_normal = LabelNormalization( Y.Data[i][0], digit_count )
+
+		training_data[i]=TrainingSample{Input:X.Data[i], Output:Y_normal}
+	}
+
 	return training_data
 }
+
+func LabelNormalization( input, label_count uint32 ) (vector []uint32){
+	//
+	vector = make( []uint32, label_count )
+
+	if input == 0 {
+		vector[label_count-1] = 1
+	} else {
+		vector[input-1] = 1
+	}
+
+	return vector
+}
+
 
 
 
