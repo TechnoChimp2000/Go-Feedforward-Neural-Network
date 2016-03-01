@@ -3,7 +3,7 @@ package network
 import (
 	"math"
 	"strconv"
-	"sync"
+	///"sync"
 	//"fmt"
 )
 
@@ -215,7 +215,7 @@ func (n *NeuralNetwork) FeedForward(trainingSampleInput []float32)[]float32{
 		} else {
 			for _, neuron := range neuronLayer.Neurons {
 
-				var wg sync.WaitGroup
+				/*var wg sync.WaitGroup
 
 				wg.Add(len(neuronLayer.Neurons))
 
@@ -223,8 +223,24 @@ func (n *NeuralNetwork) FeedForward(trainingSampleInput []float32)[]float32{
 					defer wg.Done()
 					n.calculateNeuronOutput(neuron, neuronLayerIndex)
 				}()
+				*/
 
+				n.calculateNeuronOutput(neuron, neuronLayerIndex)
 
+				// Igor's commments:
+				// The goroutines don't work as they should here.
+				// Problem 1:
+				// var wg sync and wg.Add need to go out of this loop, but stil inside live else {}
+				// Then, after the loop is over we can call wg.Wait() and wait for all the neurons
+				// to have their output values calculated, and only then we can proceed to next layer
+				// Unfortunatelly, the fix of Problem 1 leads to Problem 2
+				// Problem 2:
+				// Instead of go routine calculatingNeuronOutput for each separate Neuron in Layer, it instead
+				// calculates it always with the last neuron of the layer multiple time.
+				// I believe we have some sort of lock on n NeuralNetwork here, and only the go routines are
+				// not able to access it while we are looping through the neurons.
+				// The fix for this is not trivial in my opinion. For now, i would avoid the usage of
+				// go routines in this particular segmment
 
 				/**
 				 * we came to the end
