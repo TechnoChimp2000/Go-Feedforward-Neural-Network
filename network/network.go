@@ -8,6 +8,7 @@ import (
 
 
 	"fmt"
+
 )
 
 
@@ -97,7 +98,7 @@ func (w *NeuralNetwork) propagate(inputConnections []*Connection) float32{
 	return result
 }
 
-func (n NeuralNetwork) TrainOffline( iterations int ) {
+func (n NeuralNetwork) TrainOffline( iterations int) (errors []float32) {
 	// has to go through all the samples, do an update, evaluate, repeat until a certain condition is met.
 	// Conditions can be -- precision, number of repeats,
 
@@ -105,7 +106,6 @@ func (n NeuralNetwork) TrainOffline( iterations int ) {
 
 	// ITERATIONS
 	for i := 0; i < iterations; i++ {
-
 
 		var errorTotal, regularizationTerm float32 // TODO: regularizationTerm will stay at 0 for now, but we'll add it later
 
@@ -115,21 +115,51 @@ func (n NeuralNetwork) TrainOffline( iterations int ) {
 			actual := n.FeedForward(trainingSample.Input)
 			_error := n.calculateTotalError(actual, trainingSample.Output)
 
+			//fmt.Printf("FeedForward prediction: %v\n", actual)
 			errorTotal += _error
-			//fmt.Printf("AFTER: error total: %v\n", errorTotal)
+			fmt.Println(actual)
 
-			errorTotal = errorTotal / float32(len(n.TrainingSet)) + regularizationTerm
 
+			//fmt.Println(_error)
 		}
+
+		errorTotal = errorTotal / float32(len(n.TrainingSet)) + regularizationTerm
+		fmt.Println("errorTotal:",errorTotal)
+		errors = append(errors, errorTotal)
+
 
 		// BACK PROPAGATION
-		var deltas map[int][]float32
-		for _, trainingSample := range n.TrainingSet {
+		var deltas, deltas_buffer map[int][]float32
+
+		for i, trainingSample := range n.TrainingSet {
+
+			if i == 0 {
 				deltas = n.backPropagate(trainingSample.Output)
+			} else {
+				deltas_buffer = n.backPropagate(trainingSample.Output)
+
+				for indexLayer, layer := range deltas_buffer {
+					for indexWeight, weight := range layer {
+						deltas[indexLayer][indexWeight] += weight
+
+						// if we are in last iteration we need to divide by number of training samples
+						if i == ( len(n.TrainingSet) - 1 ) {
+							deltas[indexLayer][indexWeight] = deltas[indexLayer][indexWeight] / float32(len(n.TrainingSet))
+						}
+
+					}
+				}
+			}
+
+
 		}
+
+
 		n.updateWeightsFromDeltas(deltas)
 	}
+	return errors
 }
+
 
 func (n *NeuralNetwork) TrainOnline(callback Callback){
 	//TODO validate input
@@ -147,7 +177,8 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 			if _error < n.Precision {
 				totalSamplesTrained++
 			}else{
-				n.backPropagate(trainingSample.Output)
+				deltas := n.backPropagate(trainingSample.Output)
+				n.updateWeightsFromDeltas(deltas)
 			}
 
 			if callback != nil {
@@ -166,7 +197,7 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 
 func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) (deltas map[int][]float32) {  // deltas[indexLayer][indexNeuron]
 
-	deltas	= make(map[int][]float32)
+	deltas = make(map[int][]float32)
 
 	for i := len(n.NeuronLayers) - 1; i > 0; i-- {
 		/**
@@ -183,40 +214,26 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) (deltas ma
 				// First calculate the last layer deltas
 				deltas[i] = append(deltas[i], neuron.output - trainingSampleOutput[neuronIndex] ) // map[2:[0.7413651 -0.21707153]]
 
-				for range neuron.InputConnections {
-					//TODO following 5 lines could occur in goroutine
+				// Second, in same neuron for loop, calculate F1 and F2
+				factor1 := deltas[i][neuronIndex]
+				factor2 := n.ActivationFunction.Derivative(neuron.output)
 
-/*					go func() {
-						defer wg.Done()*/
-
-					factor1 := deltas[i][neuronIndex]
-					factor2 := n.ActivationFunction.Derivative(neuron.output)
-					deltas[i-1] = append(deltas[i-1] , factor1 * factor2) //deltasV2: map[2:[0.7413651 -0.21707153] 1:[0.13849856 0.13849856 -0.038098235 -0.038098235]]:
-
-					// l(N-1) :: delta(N-1) = delta(N) * Derivative(N-1) * Output(N-1)  	// factor1 * factor2 * factor3 // we need to store this somewhere so that we can keep on using it,
-					// deltas[weightIndex] --> gradients for this index. Update rule is then weight - (alpha * gradient)
-					// l(N-2) :: delta(N-2) = delta(N-1) * Derivative(N-2) * Output(N-2)
-					// now we have delta(N-1) values and it's time to move to the next layer
-				}
+				deltas[i-1] = append(deltas[i-1], factor1 * factor2)
 			}
-		}else{
 
+		} else {
 			for neuronIndex, neuron := range n.NeuronLayers[i].Neurons {
-				for range neuron.InputConnections {
 
-					//TODO following lines could occur in goroutine
-					var factor1 float32 = 0.0
+				var factor1 float32
 
-					for neuronInNextLayerIndex, neuronInNextLayer := range neuron.ConnectedToInNextLayer {
+				for neuronInNextLayerIndex, neuronInNextLayer := range neuron.ConnectedToInNextLayer {
 
-						var weight float32 = neuronInNextLayer.InputConnections[neuronIndex].Weight
-
-						factor1 += deltas[i][2*neuronInNextLayerIndex] * weight // what do we want here? 0.74*0.18 * w5 OR delta * w
-					}
-
-					factor2 := n.ActivationFunction.Derivative(neuron.output)
-					deltas[i-1] = append(deltas[i-1], factor1*factor2)
+					var weight float32 	= neuronInNextLayer.InputConnections[neuronIndex].Weight
+					factor1 		+= deltas[i][neuronInNextLayerIndex] * weight
 				}
+
+				factor2 	:= n.ActivationFunction.Derivative(neuron.output)
+				deltas[i-1] 	= append(deltas[i-1], factor1*factor2)
 			}
 		}
 	}
@@ -227,9 +244,11 @@ func (n *NeuralNetwork) updateWeightsFromDeltas(deltas map[int][]float32 ) {
 
 	for indexLayer, layer := range n.NeuronLayers[1:] {
 		for indexNeuron, neuron := range layer.Neurons {
-			for indexConnection, inputConnection := range neuron.InputConnections {
-				weightUpdated := inputConnection.Weight - n.LearningRate * deltas[indexLayer][indexNeuron * len(layer.Neurons)+indexConnection]*inputConnection.From.output
-				//fmt.Printf("Original weight:: %v, Updated weight: %v\n", inputConnection.Weight, weightUpdated)
+			for _, inputConnection := range neuron.InputConnections {
+
+				update := deltas[indexLayer][indexNeuron]
+				weightUpdated := inputConnection.Weight - n.LearningRate * update * inputConnection.From.output
+
 				inputConnection.Weight = weightUpdated
 			}
 		}

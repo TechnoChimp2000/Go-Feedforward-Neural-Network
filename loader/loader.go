@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"encoding/binary"
 
+	"github.com/Go-Feedforward-Neural-Network/network"
 )
 
 // this is a generic IDX loader that reads a file and returns it in a slice. Example of operation:
@@ -51,7 +52,7 @@ type Header struct {
 
 type DataPoint []uint32
 
-type TrainingSample struct {
+type TrainingSample_loader struct {
 	Input 	[]uint32
 	Output	[]uint32
 }
@@ -140,7 +141,7 @@ func dataSize( num_of_items []uint32  ) ( size uint32 ) {
 
 
 
-func CreateTrainingSet ( X *Create, Y *Create, digit_count uint32 ) ( training_data []TrainingSample ) {
+func CreateTrainingSet ( X *Create, Y *Create, digit_count uint32 ) ( training_data []network.TrainingSample ) {
 	// validate the two sets ( do they have the same number of items )
 
 	if X.Header.Num_of_items[0] != Y.Header.Num_of_items[0] {
@@ -148,21 +149,36 @@ func CreateTrainingSet ( X *Create, Y *Create, digit_count uint32 ) ( training_d
 	}
 
 	// loop
-	training_data = make([]TrainingSample, X.Header.Num_of_items[0])
+	training_data = make([]network.TrainingSample, X.Header.Num_of_items[0])
+	//training_data = make([]network.TrainingSample, 200)
+	// size of X
+
+	xSize := 784 // TODO: make this general
+
+
+
 
 	for i := range training_data {
 
 		var Y_normal = LabelNormalization( Y.Data[i][0], digit_count )
 
-		training_data[i]=TrainingSample{Input:X.Data[i], Output:Y_normal}
+		var X_normal []float32
+		X_normal = make([]float32, xSize)
+
+		for index, value := range X.Data[i] {
+			X_normal[index] = float32(value)
+		}
+		//fmt.Println(len(X_normal))
+
+		training_data[i]=network.TrainingSample{Input:X_normal, Output:Y_normal}
 	}
 
 	return training_data
 }
 
-func LabelNormalization( input, label_count uint32 ) (vector []uint32){
+func LabelNormalization( input, label_count uint32 ) (vector []float32){
 	//
-	vector = make( []uint32, label_count )
+	vector = make( []float32, label_count )
 
 	if input == 0 {
 		vector[label_count-1] = 1

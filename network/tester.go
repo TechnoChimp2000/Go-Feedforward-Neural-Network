@@ -91,8 +91,6 @@ func StartTesting() (tests []Test) {
 	tests = append(tests, FeedForward)
 
 	// BACK PROPAGATION TESTS
-	fmt.Println("before BackProp weight: ", neuronNetwork.NeuronLayers[1].Neurons[0].InputConnections[0].Weight)
-
 	var BackPropagation Test
 
 	BackPropagation.Success, BackPropagation.Output	= neuronNetwork.runBackPropagation()
@@ -107,8 +105,6 @@ func StartTesting() (tests []Test) {
 	weights2 := neuronNetwork2.InitializeTestWeights()
 	neuronNetwork2.InitializeInputConnections( weights2 )
 	neuronNetwork2.InsertOneTrainingSample()
-
-	fmt.Println("before TrainOffline weight: ", neuronNetwork2.NeuronLayers[1].Neurons[0].InputConnections[0].Weight)
 
 	TrainOffline.Success				= neuronNetwork2.runTrainOffline()
 	TrainOffline.Name				= "TrainOffline"
@@ -147,7 +143,7 @@ func (n * NeuralNetwork) runTrainOffline() (success bool) {
 	for _, layer := range n.NeuronLayers {
 		for _, neuron := range layer.Neurons {
 			for _, inputConnection := range neuron.InputConnections {
-				fmt.Println(inputConnection.Weight, real_weights[i])
+				//fmt.Println(inputConnection.Weight, real_weights[i])
 				if real_weights[i] == inputConnection.Weight {
 					success = true
 				} else {
@@ -201,6 +197,7 @@ func (n * NeuralNetwork) runBackPropagation() (success bool, output []float32) {
 
 	fmt.Println("This is the final output:", output )
 	fmt.Printf("Sample Output: %v, Final Prediction: %v, Final Error: %v\n", n.TrainingSet[0].Output, output, error) //Sample Output: [0.01 0.99], Final Prediction: [0.015913634 0.9840643], Final Error: 3.510851e-05
+
 
 	fmt.Println("These are the final weights:")
 	for _, layer := range n.NeuronLayers {
