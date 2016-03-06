@@ -167,13 +167,6 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 		var exit  bool = false
 		for  range n.TrainingSet {
 
-			/*if index == 0{
-				callback.ReceiveInfo("Starting to learn ")
-			}*/
-
-			/*if trainingIndex == 0 {
-				totalSamplesTrained = 0;
-			}*/
 			currentlyLearningSample := n.TrainingSet[totalSamplesTrained]
 			actual := n.FeedForward(currentlyLearningSample.Input)
 			_error := n.calculateTotalError(actual, currentlyLearningSample.Output)
@@ -186,19 +179,7 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 					callback.ReceiveInfo("Total samples trained are: " + strconv.Itoa(totalSamplesTrained))
 				}
 
-				if len(n.TrainingSet) == 1 {
-					if callback != nil {
-						callback.ReceiveInfo("Done")
-					}
-					exit = true
-					break;
-				}
-
-				if totalSamplesTrained == 1 {
-					continue
-				}
-
-				if(n.testNeuralNetwork(totalSamplesTrained)) {
+				if(n.testNeuralNetwork(totalSamplesTrained-1)) {
 					if totalSamplesTrained == len(n.TrainingSet) {
 						if callback != nil {
 							callback.ReceiveInfo("Done")
@@ -217,13 +198,6 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 				deltas := n.backPropagate(currentlyLearningSample.Output)
 				n.updateWeightsFromDeltas(deltas)
 			}
-
-
-
-			/*if callback != nil {
-				callback.ReceiveInfo("For training sample with index: " + strconv.Itoa(trainingIndex) +
-				" error is: " + strconv.FormatFloat(float64(_error), 'E', -1, 32) + ". Total samples trained are: " + strconv.Itoa(totalSamplesTrained))
-			}*/
 
 		}
 
