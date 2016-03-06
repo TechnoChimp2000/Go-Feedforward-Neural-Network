@@ -52,7 +52,8 @@ func CreateNetwork(topology []int, biasUnits []float32, epsilon float32 , traini
 		ActivationFunction: new(LogisticActivationFunction),
 		TrainingSet: trainingSamples,
 		LearningRate: precision,
-		Precision: precision}
+		Precision: precision,
+		trainer:new(OnlineTrainer)}
 
 
 

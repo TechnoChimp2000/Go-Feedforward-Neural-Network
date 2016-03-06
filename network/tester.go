@@ -137,7 +137,8 @@ func (n * NeuralNetwork) runTrainOffline() (success bool) {
 
 
 	//fmt.Println("weight: ", n.NeuronLayers[1].Neurons[0].InputConnections[0].Weight)
-	n.TrainOffline(10000)
+	//n.TrainOffline(10000)
+	TrainOffline(10000, n)
 
 	i := 0
 	for _, layer := range n.NeuronLayers {
@@ -155,7 +156,7 @@ func (n * NeuralNetwork) runTrainOffline() (success bool) {
 		}
 	}
 
-	fmt.Println(n.calculateTotalError( n.FeedForward(n.TrainingSet[0].Input), n.TrainingSet[0].Output ))
+	fmt.Println(n.calculateTotalError( n.feedForward(n.TrainingSet[0].Input), n.TrainingSet[0].Output ))
 
 
 	return success
@@ -178,7 +179,7 @@ func (n * NeuralNetwork) runBackPropagation() (success bool, output []float32) {
 	var error float32
 
 	for i := 0; i<10000; i++ {
-		actual = n.FeedForward(n.TrainingSet[0].Input)
+		actual = n.feedForward(n.TrainingSet[0].Input)
 		error = n.calculateTotalError( actual, n.TrainingSet[0].Output )
 
 		//fmt.Printf("Total Error at %v iteration: %v\n",i, error)
@@ -193,7 +194,7 @@ func (n * NeuralNetwork) runBackPropagation() (success bool, output []float32) {
 
 	// final values
 	error = n.calculateTotalError( actual, n.TrainingSet[0].Output )
-	output = n.FeedForward(n.TrainingSet[0].Input)
+	output = n.feedForward(n.TrainingSet[0].Input)
 
 	fmt.Println("This is the final output:", output )
 	fmt.Printf("Sample Output: %v, Final Prediction: %v, Final Error: %v\n", n.TrainingSet[0].Output, output, error) //Sample Output: [0.01 0.99], Final Prediction: [0.015913634 0.9840643], Final Error: 3.510851e-05
@@ -223,7 +224,7 @@ func (n * NeuralNetwork) runBackPropagation() (success bool, output []float32) {
 func (n *NeuralNetwork) runFeedForward() (success bool) {
 
 	real_values := []float32{ 0.75136507, 0.7729285 }
-	output := n.FeedForward(n.TrainingSet[0].Input)
+	output := n.feedForward(n.TrainingSet[0].Input)
 
 	//fmt.Println("Feed Forward output:", output)
 	for i, _ := range real_values {
@@ -442,6 +443,70 @@ func (l *LogisticActivationFunction) runDerivative() (success bool) {
 	}
 	return success
 }
+
+func TrainOffline( iterations int, n *NeuralNetwork) (errors []float32) {
+	// has to go through all the samples, do an update, evaluate, repeat until a certain condition is met.
+	// Conditions can be -- precision, number of repeats,
+
+	// VALIDATE whether training samples are defined
+
+	// ITERATIONS
+	for i := 0; i < iterations; i++ {
+
+		var errorTotal, regularizationTerm float32 // TODO: regularizationTerm will stay at 0 for now, but we'll add it later
+
+		for _, trainingSample := range n.TrainingSet {
+
+			// FEED FORWARD
+			actual := n.feedForward(trainingSample.Input)
+			_error := n.calculateTotalError(actual, trainingSample.Output)
+
+			//fmt.Printf("FeedForward prediction: %v\n", actual)
+			errorTotal += _error
+			fmt.Println(actual)
+
+
+			//fmt.Println(_error)
+		}
+
+		errorTotal = errorTotal / float32(len(n.TrainingSet)) + regularizationTerm
+		fmt.Println("errorTotal:",errorTotal)
+		errors = append(errors, errorTotal)
+
+
+		// BACK PROPAGATION
+		var deltas, deltas_buffer map[int][]float32
+
+		for i, trainingSample := range n.TrainingSet {
+
+			if i == 0 {
+				deltas = n.backPropagate(trainingSample.Output)
+			} else {
+				deltas_buffer = n.backPropagate(trainingSample.Output)
+
+				for indexLayer, layer := range deltas_buffer {
+					for indexWeight, weight := range layer {
+						deltas[indexLayer][indexWeight] += weight
+
+						// if we are in last iteration we need to divide by number of training samples
+						if i == ( len(n.TrainingSet) - 1 ) {
+							deltas[indexLayer][indexWeight] = deltas[indexLayer][indexWeight] / float32(len(n.TrainingSet))
+						}
+
+					}
+				}
+			}
+
+
+		}
+
+
+		n.updateWeightsFromDeltas(deltas)
+	}
+	return errors
+}
+
+
 
 /*
 TODO list for Thursday

@@ -1,2 +1,3 @@
 /xdata
 .idea/
+cuda/*.so
