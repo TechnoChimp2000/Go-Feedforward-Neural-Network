@@ -171,7 +171,10 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 			actual := n.FeedForward(currentlyLearningSample.Input)
 			_error := n.calculateTotalError(actual, currentlyLearningSample.Output)
 
-
+			/**
+			 * if error is small enough check previous training samples if they are still trained in neural network
+			 * ..otherwise start from beginning
+			 */
 			if _error < n.Precision {
 				totalSamplesTrained++
 
@@ -179,7 +182,15 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 					callback.ReceiveInfo("Total samples trained are: " + strconv.Itoa(totalSamplesTrained))
 				}
 
+				/**
+				 * test if previous training samples are still trained..
+				 * ..otherwise start training from beginning
+				 */
 				if(n.testNeuralNetwork(totalSamplesTrained-1)) {
+
+					/**
+					 * if all training samples are learned finish learning
+					 */
 					if totalSamplesTrained == len(n.TrainingSet) {
 						if callback != nil {
 							callback.ReceiveInfo("Done")
@@ -195,6 +206,9 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 				}
 
 			}else{
+				/**
+				 * apply backpropagation if training sample isn't trained yet
+				 */
 				deltas := n.backPropagate(currentlyLearningSample.Output)
 				n.updateWeightsFromDeltas(deltas)
 			}
