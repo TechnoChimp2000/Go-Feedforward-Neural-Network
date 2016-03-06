@@ -62,7 +62,6 @@ type NeuronLayer struct{
 	Neurons []*Neuron
 	layer   uint8
 	Bias    float32
-	NumberOfInputConnections int
 }
 
 
@@ -165,33 +164,84 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 	//TODO validate input
 	totalSamplesTrained := 0
 	for {
-		for trainingIndex, trainingSample := range n.TrainingSet {
+		var exit  bool = false
+		for  range n.TrainingSet {
 
-			if trainingIndex == 0 {
+			/*if index == 0{
+				callback.ReceiveInfo("Starting to learn ")
+			}*/
+
+			/*if trainingIndex == 0 {
 				totalSamplesTrained = 0;
-			}
-			actual := n.FeedForward(trainingSample.Input)
-			_error := n.calculateTotalError(actual, trainingSample.Output)
+			}*/
+			currentlyLearningSample := n.TrainingSet[totalSamplesTrained]
+			actual := n.FeedForward(currentlyLearningSample.Input)
+			_error := n.calculateTotalError(actual, currentlyLearningSample.Output)
 
 
 			if _error < n.Precision {
 				totalSamplesTrained++
+
+				if callback != nil {
+					callback.ReceiveInfo("Total samples trained are: " + strconv.Itoa(totalSamplesTrained))
+				}
+
+				if totalSamplesTrained == len(n.TrainingSet){
+					if callback != nil {
+						callback.ReceiveInfo("Doing final check")
+					}
+					if(n.testNeuralNetwork()) {
+						if callback != nil {
+							callback.ReceiveInfo("Done")
+						}
+						exit = true
+						break;
+					}else{
+						if callback != nil {
+							callback.ReceiveInfo("Restarting")
+						}
+						totalSamplesTrained = 0;
+					}
+				}
+
 			}else{
-				deltas := n.backPropagate(trainingSample.Output)
+				deltas := n.backPropagate(currentlyLearningSample.Output)
 				n.updateWeightsFromDeltas(deltas)
 			}
 
-			if callback != nil {
+
+
+			/*if callback != nil {
 				callback.ReceiveInfo("For training sample with index: " + strconv.Itoa(trainingIndex) +
 				" error is: " + strconv.FormatFloat(float64(_error), 'E', -1, 32) + ". Total samples trained are: " + strconv.Itoa(totalSamplesTrained))
-			}
+			}*/
 
 		}
+
+		if(exit){
+			break
+		}
+
+
+/*
 		if totalSamplesTrained == len(n.TrainingSet){
 			break;
+		}*/
+	}
+}
+
+func (n* NeuralNetwork) testNeuralNetwork() bool{
+	for _, trainingSample := range n.TrainingSet {
+
+
+		actual := n.FeedForward(trainingSample.Input)
+		_error := n.calculateTotalError(actual, trainingSample.Output)
+
+		if _error >= n.Precision {
+			return false
 		}
 	}
-
+	return true
 
 }
 
@@ -300,6 +350,7 @@ func (n *NeuralNetwork) FeedForward(trainingSampleInput []float32)[]float32{
 			 * first layer of neurons just passes through trainingSampleInput
 			 */
 			for trainingInputIndex, trainingValue := range trainingSampleInput{
+				//fmt.Printf("trainingInputIndex:: %v, layer size: %v, training sample sie: %v\n", trainingInputIndex, len(neuronLayer.Neurons) , len(trainingSampleInput))
 				neuronLayer.Neurons[trainingInputIndex].output = trainingValue
 			}
 		} else {

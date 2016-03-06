@@ -364,11 +364,11 @@ func (n *NeuralNetwork) InitializeTestWeights() (weights []*Connection) {
 func CreateSimpleNetwork() (n *NeuralNetwork) {
 
 	// build the input layer
-	input_layer := CreateNeuronLayer(2,0,0.35)
+	input_layer := CreateNeuronLayer(2,0.35)
 
 	// build two layers of neurons
-	layer1	:= CreateNeuronLayer(2, 4, 0.6 ) // Definition of 2nd parameter (number of input connections): (Bias + neurons in previous layer ) * neurons in this layer
-	layer2	:= CreateNeuronLayer(2, 4, 0 ) // this is essentially the output layer in my case
+	layer1	:= CreateNeuronLayer(2, 0.6 ) // Definition of 2nd parameter (number of input connections): (Bias + neurons in previous layer ) * neurons in this layer
+	layer2	:= CreateNeuronLayer(2, 0 ) // this is essentially the output layer in my case
 
 
 	// connect them into 3 layers.
