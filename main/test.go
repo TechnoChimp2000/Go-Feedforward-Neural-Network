@@ -68,7 +68,7 @@ func main() {
 	neuronNetwork := network.NeuralNetwork{NeuronLayers: neuronLayers, LearningRate: 0.05, TrainingSet: trainingSamples, Precision:0.001, ActivationFunction: new(network.LogisticActivationFunction)}
 
 	neuronNetwork.TrainOnline(CallbackReceiver{})
-	result := neuronNetwork.FeedForward(trainingInput)
+	result := neuronNetwork.feedForward(trainingInput)
 	fmt.Println("Result: "+strconv.FormatFloat(float64(result[0]), 'E', -1, 32) + " " + strconv.FormatFloat(float64(result[1]), 'E', -1, 32))
 
 }
