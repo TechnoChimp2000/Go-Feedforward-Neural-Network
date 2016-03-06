@@ -8,14 +8,14 @@ import (
 
 type CallbackReceiver struct{}
 func (c CallbackReceiver) ReceiveInfo(info string){
-	//fmt.Println(info)
+	fmt.Println(info)
 
 }
 
 func TestSimpleNN(t *testing.T){
-	layer1 := CreateNeuronLayer(2, 2,  0.35)
-	layer2 := CreateNeuronLayer(2, 4, 0.60)
-	layer3 := CreateNeuronLayer(2, 4, 0)
+	layer1 := CreateNeuronLayer(2, 0.35)
+	layer2 := CreateNeuronLayer(2, 0.60)
+	layer3 := CreateNeuronLayer(2, 0)
 
 	for _,neuronInLayer1 := range layer1.Neurons {
 		for _, neuronInLayer2 := range layer2.Neurons {
@@ -58,25 +58,86 @@ func TestSimpleNN(t *testing.T){
 	neuronLayers = append(neuronLayers, & layer2)
 	neuronLayers = append(neuronLayers, & layer3)
 
-	trainingInput := []float32{0.05, 0.10}
+	/*trainingInput := []float32{0.05, 0.10}
 	trainingOutput := []float32{0.01, 0.99}
-	//trainingOutput := []float32{0.5, 0.5}
+	//trainingOutput := []float32{0.1, 0.9}
 
 	trainingSample := TrainingSample{Input: trainingInput, Output: trainingOutput}
 
-	trainingSamples := []TrainingSample{trainingSample}
+	trainingSamples := []TrainingSample{trainingSample}*/
+
+	trainingSamples := createSimpleTrainingSet()
+
 
 	neuronNetwork := NeuralNetwork{NeuronLayers: neuronLayers, LearningRate: 0.02, TrainingSet: trainingSamples, Precision:0.0003, ActivationFunction: new(LogisticActivationFunction)}
 
 	neuronNetwork.TrainOnline(CallbackReceiver{})
 
-	result := neuronNetwork.FeedForward(trainingInput)
+	result := neuronNetwork.FeedForward(trainingSamples[0].Input)
 	fmt.Println("network test result: "+strconv.FormatFloat(float64(result[0]), 'E', -1, 32) + " " + strconv.FormatFloat(float64(result[1]), 'E', -1, 32))
 
 
 
+}
+
+func TestSimpleNNWithFactory(t *testing.T){
+
+	trainingSamples := createSimpleTrainingSet()
+
+	network := CreateNetwork([]int{2, 2, 2}, []float32{0.35, 0.60, 0}, 1, trainingSamples, 0.02, 0.003)
+	network.TrainOnline(CallbackReceiver{})
 
 
+	result := network.FeedForward(trainingSamples[0].Input)
+	fmt.Println("network test with factory result: "+strconv.FormatFloat(float64(result[0]), 'E', -1, 32) + " " + strconv.FormatFloat(float64(result[1]), 'E', -1, 32))
+
+}
+
+func TestXOROnline(t *testing.T){
+
+	network := createXORNetwork()
+	network.TrainOnline(CallbackReceiver{})
 
 
+	result1 := network.FeedForward([]float32{0.0, 0.0})
+	fmt.Println("network test XOR (0,0) result: "+strconv.FormatFloat(float64(result1[0]), 'E', -1, 32))
+
+	result2 := network.FeedForward([]float32{1.0, 1.0})
+	fmt.Println("network test XOR (1,1) result: "+strconv.FormatFloat(float64(result2[0]), 'E', -1, 32))
+
+	result3 := network.FeedForward([]float32{0.0, 1.0})
+	fmt.Println("network test XOR (0,1) result: "+strconv.FormatFloat(float64(result3[0]), 'E', -1, 32))
+
+	result4 := network.FeedForward([]float32{1.0, 0.0})
+	fmt.Println("network test XOR (1,0) result: "+strconv.FormatFloat(float64(result4[0]), 'E', -1, 32))
+
+
+}
+
+func TestXORffline(t *testing.T){
+	network := createXORNetwork()
+	network.TrainOffline(10000)
+
+}
+
+func createXORNetwork() *NeuralNetwork{
+	trainingSample1 := TrainingSample{Input: []float32{0.0, 0.0}, Output: []float32{0.0}}
+	trainingSample2 := TrainingSample{Input: []float32{1.0, 1.0}, Output: []float32{0.0}}
+	trainingSample3 := TrainingSample{Input: []float32{1.0, 0.0}, Output: []float32{1.0}}
+	trainingSample4 := TrainingSample{Input: []float32{0.0, 1.0}, Output: []float32{1.0}}
+
+	trainingSamples := []TrainingSample{trainingSample1, trainingSample2, trainingSample3, trainingSample4}
+	network := CreateNetwork([]int{2, 2, 1}, []float32{0.35, 0.60, 0}, 1, trainingSamples, 0.002, 0.05)
+	return network;
+}
+
+func createSimpleTrainingSet() []TrainingSample{
+	trainingInput := []float32{0.05, 0.10}
+	trainingOutput := []float32{0.01, 0.99}
+	//trainingOutput := []float32{0.1, 0.9}
+
+	trainingSample := TrainingSample{Input: trainingInput, Output: trainingOutput}
+
+	trainingSamples := []TrainingSample{trainingSample}
+	return trainingSamples
 }

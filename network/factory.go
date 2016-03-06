@@ -6,16 +6,16 @@ import (
 )
 
 
-func CreateNeuronLayer(neuronNumber int, NumberOfInputConnections int, bias float32) NeuronLayer{
+func CreateNeuronLayer(neuronNumber int, bias float32) NeuronLayer{
 
 	var neurons []*Neuron
 	for i :=0; i< neuronNumber; i++ {
 		neurons = append(neurons, new(Neuron))
 	}
-	return NeuronLayer{Neurons: neurons, Bias: bias, NumberOfInputConnections:NumberOfInputConnections}
+	return NeuronLayer{Neurons: neurons, Bias: bias}
 }
 
-func CreateNetwork(topology []int, biasUnits []float32, epsilon float32 ) (n *NeuralNetwork) {
+func CreateNetwork(topology []int, biasUnits []float32, epsilon float32 , trainingSamples []TrainingSample, learningRate float32, precision float32) (n *NeuralNetwork) {
 
 	if epsilon == 0 {
 		panic("Epsilon is 0, please assign to a non-zero value.")
@@ -28,13 +28,9 @@ func CreateNetwork(topology []int, biasUnits []float32, epsilon float32 ) (n *Ne
 
 	for i, numberOfNeurons := range topology {
 
-		if i == 0 {
-			layer := CreateNeuronLayer( numberOfNeurons, 0, biasUnits[i] )
-			neuronLayers = append(neuronLayers, & layer)
-		} else {
-			layer := CreateNeuronLayer( numberOfNeurons , topology[i-1] * numberOfNeurons , biasUnits[i] )
-			neuronLayers = append(neuronLayers, & layer)
-		}
+		layer := CreateNeuronLayer( numberOfNeurons , biasUnits[i] )
+		neuronLayers = append(neuronLayers, & layer)
+
 	}
 
 	// BUILD THE CONNECTIONS BETWEEN LAYERS
@@ -47,27 +43,36 @@ func CreateNetwork(topology []int, biasUnits []float32, epsilon float32 ) (n *Ne
 		}
 	}
 
-	// declare neural network
-	neuronNetwork := NeuralNetwork{NeuronLayers: neuronLayers, ActivationFunction: new(LogisticActivationFunction)}
-
 	// initialize weights, randomly between 0 and 1 and multiply it by epsilon
 	// since it's the same loop, we might as well define the []InputConnections there as well
-	neuronNetwork.InitializeWeightsAndInputConnections(epsilon)
+	initializeWeightsAndInputConnections(neuronLayers, epsilon)
+
+	// declare neural network
+	neuronNetwork := NeuralNetwork{NeuronLayers: neuronLayers,
+		ActivationFunction: new(LogisticActivationFunction),
+		TrainingSet: trainingSamples,
+		LearningRate: precision,
+		Precision: precision}
+
+
 
 	return &neuronNetwork
 }
 
-func (n * NeuralNetwork) InitializeWeightsAndInputConnections( epsilon float32) {
+func initializeWeightsAndInputConnections(neuronLayers []*NeuronLayer, epsilon float32) {
 
 	// use a different seed every time for weight initialization
 	// TODO: maybe we can use a static seed during testing for result comparison?
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
+	source := rand.NewSource(time.Now().UnixNano())
+	random := rand.New(source)
 
-	for i, layer := range n.NeuronLayers[1:] {
+	for i, layer := range neuronLayers {
+		if i==0 {
+			continue
+		}
 		for _, neuronInThisLayer := range layer.Neurons {
-			for _, neuronInPreviousLayer := range n.NeuronLayers[i].Neurons {
-				weight := r1.Float32()
+			for _, neuronInPreviousLayer := range neuronLayers[i-1].Neurons {
+				weight := random.Float32()
 				w := &Connection{From: neuronInPreviousLayer, To: neuronInThisLayer, Weight: weight*epsilon}
 
 				neuronInThisLayer.InputConnections = append( neuronInThisLayer.InputConnections, w )
