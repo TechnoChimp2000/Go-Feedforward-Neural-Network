@@ -84,7 +84,7 @@ func TestSimpleNNWithFactory(t *testing.T){
 
 	trainingSamples := createSimpleTrainingSet()
 
-	network := CreateNetwork([]int{2, 2, 2}, []float32{0.35, 0.60, 0}, 1, trainingSamples, 0.02, 0.003)
+	network := CreateNetwork([]int{2, 2, 2}, []float32{0.35, 0.60, 0}, 1, trainingSamples, 0.02, 0.001)
 	network.TrainOnline(CallbackReceiver{})
 
 
@@ -127,7 +127,7 @@ func createXORNetwork() *NeuralNetwork{
 	trainingSample4 := TrainingSample{Input: []float32{0.0, 1.0}, Output: []float32{1.0}}
 
 	trainingSamples := []TrainingSample{trainingSample1, trainingSample2, trainingSample3, trainingSample4}
-	network := CreateNetwork([]int{2, 2, 1}, []float32{0.35, 0.60, 0}, 1, trainingSamples, 0.002, 0.05)
+	network := CreateNetwork([]int{2, 2, 1}, []float32{0.35, 0.60, 0}, 1, trainingSamples, 0.002, 0.005)
 	return network;
 }
 

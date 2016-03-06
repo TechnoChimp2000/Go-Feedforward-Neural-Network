@@ -186,22 +186,31 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 					callback.ReceiveInfo("Total samples trained are: " + strconv.Itoa(totalSamplesTrained))
 				}
 
-				if totalSamplesTrained == len(n.TrainingSet){
+				if len(n.TrainingSet) == 1 {
 					if callback != nil {
-						callback.ReceiveInfo("Doing final check")
+						callback.ReceiveInfo("Done")
 					}
-					if(n.testNeuralNetwork()) {
+					exit = true
+					break;
+				}
+
+				if totalSamplesTrained == 1 {
+					continue
+				}
+
+				if(n.testNeuralNetwork(totalSamplesTrained)) {
+					if totalSamplesTrained == len(n.TrainingSet) {
 						if callback != nil {
 							callback.ReceiveInfo("Done")
 						}
 						exit = true
 						break;
-					}else{
-						if callback != nil {
-							callback.ReceiveInfo("Restarting")
-						}
-						totalSamplesTrained = 0;
 					}
+				}else{
+					if callback != nil {
+						callback.ReceiveInfo("Restarting")
+					}
+					totalSamplesTrained = 0;
 				}
 
 			}else{
@@ -230,8 +239,8 @@ func (n *NeuralNetwork) TrainOnline(callback Callback){
 	}
 }
 
-func (n* NeuralNetwork) testNeuralNetwork() bool{
-	for _, trainingSample := range n.TrainingSet {
+func (n* NeuralNetwork) testNeuralNetwork(numSamples int) bool{
+	for _, trainingSample := range n.TrainingSet[:numSamples] {
 
 
 		actual := n.FeedForward(trainingSample.Input)
