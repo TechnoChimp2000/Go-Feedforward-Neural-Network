@@ -1,26 +1,29 @@
 package network
 
-import "strconv"
+import (
+	"strconv"
+	"fmt"
+)
 
 type Trainer interface{
-	train(callback Callback, n *NeuralNetwork)
+	train(n *NeuralNetwork, trainingSet        []TrainingSample)
 }
 
 
 type OnlineTrainer struct{}
 
-func (o *OnlineTrainer) train(callback Callback, n *NeuralNetwork){
-	if callback != nil {
-		callback.ReceiveInfo("OnlineTrainer start")
+func (o *OnlineTrainer) train(n *NeuralNetwork, trainingSet        []TrainingSample){
+	if n.debug {
+		fmt.Println("OnlineTrainer start")
 	}
 
 	//TODO validate input
 	totalSamplesTrained := 0
 	for {
 		var exit  bool = false
-		for  range n.TrainingSet {
+		for  range trainingSet {
 
-			currentlyLearningSample := n.TrainingSet[totalSamplesTrained]
+			currentlyLearningSample := trainingSet[totalSamplesTrained]
 			actual := n.feedForward(currentlyLearningSample.Input)
 			_error := n.calculateTotalError(actual, currentlyLearningSample.Output)
 
@@ -28,32 +31,32 @@ func (o *OnlineTrainer) train(callback Callback, n *NeuralNetwork){
 			 * if error is small enough check previous training samples if they are still trained in neural network
 			 * ..otherwise start from beginning
 			 */
-			if _error < n.Precision {
+			if _error < n.precision {
 				totalSamplesTrained++
 
-				if callback != nil {
-					callback.ReceiveInfo("Total samples trained are: " + strconv.Itoa(totalSamplesTrained))
+				if n.debug {
+					fmt.Println("Total samples trained are: " + strconv.Itoa(totalSamplesTrained))
 				}
 
 				/**
 				 * test if previous training samples are still trained..
 				 * ..otherwise start training from beginning
 				 */
-				if(n.testNeuralNetwork(totalSamplesTrained-1)) {
+				if(n.testNeuralNetwork(totalSamplesTrained-1, trainingSet)) {
 
 					/**
 					 * if all training samples are learned finish learning
 					 */
-					if totalSamplesTrained == len(n.TrainingSet) {
-						if callback != nil {
-							callback.ReceiveInfo("Done")
+					if totalSamplesTrained == len(trainingSet) {
+						if n.debug {
+							fmt.Println("Done")
 						}
 						exit = true
 						break;
 					}
 				}else{
-					if callback != nil {
-						callback.ReceiveInfo("Restarting")
+					if n.debug {
+						fmt.Println("Restarting")
 					}
 					totalSamplesTrained = 0;
 				}
@@ -78,7 +81,7 @@ func (o *OnlineTrainer) train(callback Callback, n *NeuralNetwork){
 
 type OfflineTrainer struct{}
 
-func (o *OfflineTrainer) train(callback Callback, n *NeuralNetwork){
+func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet        []TrainingSample){
 	panic("Not implemented yet")
 }
 
@@ -93,14 +96,14 @@ func (w *NeuralNetwork) propagate(inputConnections []*Connection) float32{
 }
 
 
-func (n* NeuralNetwork) testNeuralNetwork(numSamples int) bool{
-	for _, trainingSample := range n.TrainingSet[:numSamples] {
+func (n* NeuralNetwork) testNeuralNetwork(numSamples int, trainingSet        []TrainingSample) bool{
+	for _, trainingSample := range trainingSet[:numSamples] {
 
 
 		actual := n.feedForward(trainingSample.Input)
 		_error := n.calculateTotalError(actual, trainingSample.Output)
 
-		if _error >= n.Precision {
+		if _error >= n.precision {
 			return false
 		}
 	}
@@ -160,7 +163,7 @@ func (n *NeuralNetwork) updateWeightsFromDeltas(deltas map[int][]float32 ) {
 			for _, inputConnection := range neuron.InputConnections {
 
 				update := deltas[indexLayer][indexNeuron]
-				weightUpdated := inputConnection.Weight - n.LearningRate * update * inputConnection.From.output
+				weightUpdated := inputConnection.Weight - n.learningRate * update * inputConnection.From.output
 
 				inputConnection.Weight = weightUpdated
 			}

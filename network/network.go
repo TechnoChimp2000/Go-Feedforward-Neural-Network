@@ -1,11 +1,6 @@
 package network
 
 
-// interfaces
-type Callback interface{
-	ReceiveInfo(info string)
-}
-
 // structures
 type Connection struct{
 	From          *Neuron
@@ -36,24 +31,27 @@ type TrainingSample struct{
 
 type NeuralNetwork struct{
 	NeuronLayers       []*NeuronLayer
-	LearningRate       float32
-	TrainingSet        []TrainingSample
+	learningRate       float32
+	//TrainingSet        []TrainingSample
 
 	//precision tells how precise network should  be
 	//that is error should be lesser than precision
 	//typical value is 0.05
-	Precision          float32
+	precision          float32
 
 
 	// functions
 	ActivationFunction ActivationFunction
 
-	trainer Trainer
+	trainer            Trainer
+
+	//if debug is true nn processing is logged
+	debug bool
 
 }
 
-func (n *NeuralNetwork)Train(callback Callback){
-	n.trainer.train(callback, n)
+func (n *NeuralNetwork)Train(trainingSet        []TrainingSample){
+	n.trainer.train(n, trainingSet)
 }
 
 func (n *NeuralNetwork)Calculate(trainingSampleInput []float32)[]float32{
