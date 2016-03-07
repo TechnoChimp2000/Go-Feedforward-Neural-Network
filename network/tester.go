@@ -56,6 +56,9 @@ func StartTesting() (tests []Test) {
 
 	neuronNetwork := CreateSimpleNetwork()
 
+	trainingSet := CreateSimpleTrainingSet()
+
+
 	// Forward Propagation Testing
 
 	// WEIGHTS
@@ -66,7 +69,7 @@ func StartTesting() (tests []Test) {
 	neuronNetwork.InitializeInputConnections(weights)
 
 	// CHANGE OUTPUT of Neurons in input_layer to be equal to
-	neuronNetwork.InsertOneTrainingSample()
+	neuronNetwork.InsertOneTrainingSample(trainingSet)
 
 	var NNpropagateSimple Test
 
@@ -85,7 +88,7 @@ func StartTesting() (tests []Test) {
 	// FULL FEED FORWARD TEST
 	var FeedForward Test
 
-	FeedForward.Success	= neuronNetwork.runFeedForward()
+	FeedForward.Success	= neuronNetwork.runFeedForward(trainingSet)
 	FeedForward.Name	= "FeedForward"
 
 	tests = append(tests, FeedForward)
@@ -93,7 +96,7 @@ func StartTesting() (tests []Test) {
 	// BACK PROPAGATION TESTS
 	var BackPropagation Test
 
-	BackPropagation.Success, BackPropagation.Output	= neuronNetwork.runBackPropagation()
+	BackPropagation.Success, BackPropagation.Output	= neuronNetwork.runBackPropagation(trainingSet)
 	BackPropagation.Name				= "BackPropagation"
 	BackPropagation.Comment				= "Same results as http://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/"
 
@@ -104,9 +107,9 @@ func StartTesting() (tests []Test) {
 	neuronNetwork2 := CreateSimpleNetwork()
 	weights2 := neuronNetwork2.InitializeTestWeights()
 	neuronNetwork2.InitializeInputConnections( weights2 )
-	neuronNetwork2.InsertOneTrainingSample()
+	neuronNetwork2.InsertOneTrainingSample(trainingSet)
 
-	TrainOffline.Success				= neuronNetwork2.runTrainOffline()
+	TrainOffline.Success				= neuronNetwork2.runTrainOffline(trainingSet)
 	TrainOffline.Name				= "TrainOffline"
 
 	tests = append(tests, TrainOffline)
@@ -114,7 +117,7 @@ func StartTesting() (tests []Test) {
 	return tests
 }
 
-func (n * NeuralNetwork) runTrainOffline() (success bool) {
+func (n * NeuralNetwork) runTrainOffline(trainingSet []TrainingSample) (success bool) {
 
 	real_weights := []float32{
 		0.37851045,
@@ -138,7 +141,7 @@ func (n * NeuralNetwork) runTrainOffline() (success bool) {
 
 	//fmt.Println("weight: ", n.NeuronLayers[1].Neurons[0].InputConnections[0].Weight)
 	//n.TrainOffline(10000)
-	TrainOffline(10000, n)
+	TrainOffline(10000, n, trainingSet)
 
 	i := 0
 	for _, layer := range n.NeuronLayers {
@@ -156,16 +159,16 @@ func (n * NeuralNetwork) runTrainOffline() (success bool) {
 		}
 	}
 
-	fmt.Println(n.calculateTotalError( n.feedForward(n.TrainingSet[0].Input), n.TrainingSet[0].Output ))
+	fmt.Println(n.calculateTotalError( n.feedForward(trainingSet[0].Input), trainingSet[0].Output ))
 
 
 	return success
 }
 
-func (n * NeuralNetwork) runBackPropagation() (success bool, output []float32) {
+func (n * NeuralNetwork) runBackPropagation(trainingSet []TrainingSample) (success bool, output []float32) {
 	// Let's do a sample back propagation test with 1 element only!
 
-	sample_output := n.TrainingSet[0].Output
+	sample_output := trainingSet[0].Output
 
 	// get the total number of weights
 	weights_length := 0;
@@ -179,8 +182,8 @@ func (n * NeuralNetwork) runBackPropagation() (success bool, output []float32) {
 	var error float32
 
 	for i := 0; i<10000; i++ {
-		actual = n.feedForward(n.TrainingSet[0].Input)
-		error = n.calculateTotalError( actual, n.TrainingSet[0].Output )
+		actual = n.feedForward(trainingSet[0].Input)
+		error = n.calculateTotalError( actual, trainingSet[0].Output )
 
 		//fmt.Printf("Total Error at %v iteration: %v\n",i, error)
 		//fmt.Printf("RealOutput Value: %v\n",n.TrainingSet[0].Output)
@@ -193,11 +196,11 @@ func (n * NeuralNetwork) runBackPropagation() (success bool, output []float32) {
 	}
 
 	// final values
-	error = n.calculateTotalError( actual, n.TrainingSet[0].Output )
-	output = n.feedForward(n.TrainingSet[0].Input)
+	error = n.calculateTotalError( actual, trainingSet[0].Output )
+	output = n.feedForward(trainingSet[0].Input)
 
 	fmt.Println("This is the final output:", output )
-	fmt.Printf("Sample Output: %v, Final Prediction: %v, Final Error: %v\n", n.TrainingSet[0].Output, output, error) //Sample Output: [0.01 0.99], Final Prediction: [0.015913634 0.9840643], Final Error: 3.510851e-05
+	fmt.Printf("Sample Output: %v, Final Prediction: %v, Final Error: %v\n",trainingSet[0].Output, output, error) //Sample Output: [0.01 0.99], Final Prediction: [0.015913634 0.9840643], Final Error: 3.510851e-05
 
 
 	fmt.Println("These are the final weights:")
@@ -221,10 +224,10 @@ func (n * NeuralNetwork) runBackPropagation() (success bool, output []float32) {
 	return success, output
 }
 
-func (n *NeuralNetwork) runFeedForward() (success bool) {
+func (n *NeuralNetwork) runFeedForward(trainingSet []TrainingSample) (success bool) {
 
 	real_values := []float32{ 0.75136507, 0.7729285 }
-	output := n.feedForward(n.TrainingSet[0].Input)
+	output := n.feedForward(trainingSet[0].Input)
 
 	//fmt.Println("Feed Forward output:", output)
 	for i, _ := range real_values {
@@ -289,11 +292,11 @@ func (n *NeuralNetwork) runSimplePropagateTest() (success bool) {
 	return success
 }
 
-func (n *NeuralNetwork) InsertOneTrainingSample() {
+func (n *NeuralNetwork) InsertOneTrainingSample(trainingSet []TrainingSample) {
 
 	input_layer := n.NeuronLayers[0]
-	input_layer.Neurons[0].output = n.TrainingSet[0].Input[0]
-	input_layer.Neurons[1].output = n.TrainingSet[0].Input[1]
+	input_layer.Neurons[0].output = trainingSet[0].Input[0]
+	input_layer.Neurons[1].output = trainingSet[0].Input[1]
 
 }
 
@@ -365,11 +368,11 @@ func (n *NeuralNetwork) InitializeTestWeights() (weights []*Connection) {
 func CreateSimpleNetwork() (n *NeuralNetwork) {
 
 	// build the input layer
-	input_layer := CreateNeuronLayer(2,0.35)
+	input_layer := createNeuronLayer(2,0.35)
 
 	// build two layers of neurons
-	layer1	:= CreateNeuronLayer(2, 0.6 ) // Definition of 2nd parameter (number of input connections): (Bias + neurons in previous layer ) * neurons in this layer
-	layer2	:= CreateNeuronLayer(2, 0 ) // this is essentially the output layer in my case
+	layer1	:= createNeuronLayer(2, 0.6 ) // Definition of 2nd parameter (number of input connections): (Bias + neurons in previous layer ) * neurons in this layer
+	layer2	:= createNeuronLayer(2, 0 ) // this is essentially the output layer in my case
 
 
 	// connect them into 3 layers.
@@ -393,15 +396,20 @@ func CreateSimpleNetwork() (n *NeuralNetwork) {
 		}
 	}
 
-	// Create one training sample for the network and turn it into a 1 element slice
-	ts := TrainingSample{Input:[]float32{0.05, 0.1}, Output:[]float32{0.01, 0.99}}
-	TrainingSamples := []TrainingSample{ts}
+
 
 	// declare neural network
-	neuronNetwork := NeuralNetwork{NeuronLayers: neuronLayers, TrainingSet:TrainingSamples, LearningRate: 0.5, Precision:0.0003, ActivationFunction: new(LogisticActivationFunction)}
+	neuronNetwork := NeuralNetwork{NeuronLayers: neuronLayers, learningRate: 0.5, precision:0.0003, ActivationFunction: new(LogisticActivationFunction)}
 	// TODO: Remove the TrainingSet from creation of network. It is not needed at this point and can be done later with other functions.
 
 	return &neuronNetwork
+}
+
+func CreateSimpleTrainingSet() []TrainingSample{
+	// Create one training sample for the network and turn it into a 1 element slice
+	ts := TrainingSample{Input:[]float32{0.05, 0.1}, Output:[]float32{0.01, 0.99}}
+	TrainingSamples := []TrainingSample{ts}
+	return TrainingSamples
 }
 
 
@@ -444,7 +452,7 @@ func (l *LogisticActivationFunction) runDerivative() (success bool) {
 	return success
 }
 
-func TrainOffline( iterations int, n *NeuralNetwork) (errors []float32) {
+func TrainOffline( iterations int, n *NeuralNetwork, trainingSet []TrainingSample) (errors []float32) {
 	// has to go through all the samples, do an update, evaluate, repeat until a certain condition is met.
 	// Conditions can be -- precision, number of repeats,
 
@@ -455,7 +463,7 @@ func TrainOffline( iterations int, n *NeuralNetwork) (errors []float32) {
 
 		var errorTotal, regularizationTerm float32 // TODO: regularizationTerm will stay at 0 for now, but we'll add it later
 
-		for _, trainingSample := range n.TrainingSet {
+		for _, trainingSample := range trainingSet {
 
 			// FEED FORWARD
 			actual := n.feedForward(trainingSample.Input)
@@ -469,7 +477,7 @@ func TrainOffline( iterations int, n *NeuralNetwork) (errors []float32) {
 			//fmt.Println(_error)
 		}
 
-		errorTotal = errorTotal / float32(len(n.TrainingSet)) + regularizationTerm
+		errorTotal = errorTotal / float32(len(trainingSet)) + regularizationTerm
 		fmt.Println("errorTotal:",errorTotal)
 		errors = append(errors, errorTotal)
 
@@ -477,7 +485,7 @@ func TrainOffline( iterations int, n *NeuralNetwork) (errors []float32) {
 		// BACK PROPAGATION
 		var deltas, deltas_buffer map[int][]float32
 
-		for i, trainingSample := range n.TrainingSet {
+		for i, trainingSample := range trainingSet {
 
 			if i == 0 {
 				deltas = n.backPropagate(trainingSample.Output)
@@ -489,8 +497,8 @@ func TrainOffline( iterations int, n *NeuralNetwork) (errors []float32) {
 						deltas[indexLayer][indexWeight] += weight
 
 						// if we are in last iteration we need to divide by number of training samples
-						if i == ( len(n.TrainingSet) - 1 ) {
-							deltas[indexLayer][indexWeight] = deltas[indexLayer][indexWeight] / float32(len(n.TrainingSet))
+						if i == ( len(trainingSet) - 1 ) {
+							deltas[indexLayer][indexWeight] = deltas[indexLayer][indexWeight] / float32(len(trainingSet))
 						}
 
 					}
