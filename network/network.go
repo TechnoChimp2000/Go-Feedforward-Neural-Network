@@ -28,11 +28,20 @@ type TrainingSample struct{
 	Output []float32
 }
 
+type Precision int
+
+const (
+	Rough Precision = iota
+	Medium
+	High
+	VeryHigh
+
+)
+
 
 type NeuralNetwork struct{
-	NeuronLayers       []*NeuronLayer
+	neuronLayers       []*NeuronLayer
 	learningRate       float32
-	//TrainingSet        []TrainingSample
 
 	//precision tells how precise network should  be
 	//that is error should be lesser than precision
@@ -46,7 +55,7 @@ type NeuralNetwork struct{
 	trainer            Trainer
 
 	//if debug is true nn processing is logged
-	debug bool
+	debug              bool
 
 }
 
@@ -56,6 +65,19 @@ func (n *NeuralNetwork)Train(trainingSet        []TrainingSample){
 
 func (n *NeuralNetwork)Calculate(trainingSampleInput []float32)[]float32{
 	return n.feedForward(trainingSampleInput)
+}
+
+func (n *NeuralNetwork)SetPrecision(precision Precision){
+	switch precision {
+	case Rough:
+		n.precision = 0.01
+	case Medium:
+		n.precision = 0.005
+	case High:
+		n.precision = 0.001
+	case VeryHigh:
+		n.precision = 0.0001
+	}
 }
 
 

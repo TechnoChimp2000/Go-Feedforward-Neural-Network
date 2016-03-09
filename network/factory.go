@@ -47,7 +47,7 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	initializeWeightsAndInputConnections(neuronLayers)
 
 	// declare neural network
-	neuronNetwork := NeuralNetwork{NeuronLayers: neuronLayers,
+	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers,
 		ActivationFunction: new(LogisticActivationFunction),
 		learningRate: 0.02,
 		precision: 0.005,
