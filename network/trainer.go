@@ -115,17 +115,17 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) (deltas ma
 
 	deltas = make(map[int][]float32)
 
-	for i := len(n.NeuronLayers) - 1; i > 0; i-- {
+	for i := len(n.neuronLayers) - 1; i > 0; i-- {
 		/**
 		 * processing last layer of neuron connections
 		 */
-		if(i == len(n.NeuronLayers) - 1){
+		if(i == len(n.neuronLayers) - 1){
 
 			/*var wg sync.WaitGroup
 
 			wg.Add(n.NeuronLayers[i].NumberOfInputConnections)*/
 
-			for neuronIndex, neuron := range n.NeuronLayers[i].Neurons {
+			for neuronIndex, neuron := range n.neuronLayers[i].Neurons {
 
 				// First calculate the last layer deltas
 				deltas[i] = append(deltas[i], neuron.output - trainingSampleOutput[neuronIndex] ) // map[2:[0.7413651 -0.21707153]]
@@ -138,7 +138,7 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) (deltas ma
 			}
 
 		} else {
-			for neuronIndex, neuron := range n.NeuronLayers[i].Neurons {
+			for neuronIndex, neuron := range n.neuronLayers[i].Neurons {
 
 				var factor1 float32
 
@@ -158,7 +158,7 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) (deltas ma
 
 func (n *NeuralNetwork) updateWeightsFromDeltas(deltas map[int][]float32 ) {
 
-	for indexLayer, layer := range n.NeuronLayers[1:] {
+	for indexLayer, layer := range n.neuronLayers[1:] {
 		for indexNeuron, neuron := range layer.Neurons {
 			for _, inputConnection := range neuron.InputConnections {
 
@@ -183,7 +183,7 @@ func (n *NeuralNetwork) calculateTotalError(actual []float32, output []float32) 
 
 func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 	var actual []float32
-	for neuronLayerIndex, neuronLayer := range n.NeuronLayers {
+	for neuronLayerIndex, neuronLayer := range n.neuronLayers {
 		if neuronLayerIndex == 0 {
 			/**
 			 * first layer of neurons just passes through trainingSampleInput
@@ -225,7 +225,7 @@ func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 				/**
 				 * we came to the end
 				 */
-				if neuronLayerIndex == len(n.NeuronLayers) - 1 {
+				if neuronLayerIndex == len(n.neuronLayers) - 1 {
 					actual = append(actual, neuron.output)
 					//fmt.Println(strconv.FormatFloat(float64(neuron.output), 'E', -1, 32))
 				}
@@ -239,6 +239,6 @@ func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 
 func (n *NeuralNetwork) calculateNeuronOutput(neuron *Neuron, neuronLayerIndex int){
 	propagation := n.propagate(neuron.InputConnections)
-	bias := n.NeuronLayers[neuronLayerIndex - 1].Bias
+	bias := n.neuronLayers[neuronLayerIndex - 1].Bias
 	neuron.output = n.ActivationFunction.Activate(propagation + bias * 1.0)
 }

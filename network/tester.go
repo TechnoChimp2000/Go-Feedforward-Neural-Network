@@ -144,7 +144,7 @@ func (n * NeuralNetwork) runTrainOffline(trainingSet []TrainingSample) (success 
 	TrainOffline(10000, n, trainingSet)
 
 	i := 0
-	for _, layer := range n.NeuronLayers {
+	for _, layer := range n.neuronLayers {
 		for _, neuron := range layer.Neurons {
 			for _, inputConnection := range neuron.InputConnections {
 				//fmt.Println(inputConnection.Weight, real_weights[i])
@@ -172,7 +172,7 @@ func (n * NeuralNetwork) runBackPropagation(trainingSet []TrainingSample) (succe
 
 	// get the total number of weights
 	weights_length := 0;
-	for _, l := range n.NeuronLayers[1:] {
+	for _, l := range n.neuronLayers[1:] {
 		for _, neuron := range l.Neurons {
 			weights_length += len(neuron.InputConnections)
 		}
@@ -204,7 +204,7 @@ func (n * NeuralNetwork) runBackPropagation(trainingSet []TrainingSample) (succe
 
 
 	fmt.Println("These are the final weights:")
-	for _, layer := range n.NeuronLayers {
+	for _, layer := range n.neuronLayers {
 		for _, neuron := range layer.Neurons {
 			for _, inputConnection := range neuron.InputConnections {
 				fmt.Println(inputConnection.Weight)
@@ -244,8 +244,8 @@ func (n *NeuralNetwork) runFeedForward(trainingSet []TrainingSample) (success bo
 // Since we'll be 'faking' layer1 outputs, the argument should not be a pointer to our neural network
 func (n NeuralNetwork) runPropagationWithBias() (success bool) {
 
-	layer1 := n.NeuronLayers[1]
-	layer2 := n.NeuronLayers[2]
+	layer1 := n.neuronLayers[1]
+	layer2 := n.neuronLayers[2]
 
 	bias 			:= layer1.Bias
 	layer1.Neurons[0].output = 1
@@ -272,7 +272,7 @@ func (n NeuralNetwork) runPropagationWithBias() (success bool) {
 
 func (n *NeuralNetwork) runSimplePropagateTest() (success bool) {
 
-	layer1 := n.NeuronLayers[1]
+	layer1 := n.neuronLayers[1]
 
 	real_values := []float32{0.027500002, 0.0425}
 
@@ -294,7 +294,7 @@ func (n *NeuralNetwork) runSimplePropagateTest() (success bool) {
 
 func (n *NeuralNetwork) InsertOneTrainingSample(trainingSet []TrainingSample) {
 
-	input_layer := n.NeuronLayers[0]
+	input_layer := n.neuronLayers[0]
 	input_layer.Neurons[0].output = trainingSet[0].Input[0]
 	input_layer.Neurons[1].output = trainingSet[0].Input[1]
 
@@ -303,9 +303,9 @@ func (n *NeuralNetwork) InsertOneTrainingSample(trainingSet []TrainingSample) {
 
 func (n *NeuralNetwork) InitializeInputConnections( weights []*Connection) {
 
-	input_layer := n.NeuronLayers[0]
-	layer1 := n.NeuronLayers[1]
-	layer2 := n.NeuronLayers[2]
+	input_layer := n.neuronLayers[0]
+	layer1 := n.neuronLayers[1]
+	layer2 := n.neuronLayers[2]
 
 
 	weight_counter := 0 // TODO: weight counter will have to be dealt with 'generically', but not in the test
@@ -341,9 +341,9 @@ func (n *NeuralNetwork) InitializeTestWeights() (weights []*Connection) {
 	w_l1 := float32(0.15)
 	w_l2 := float32(0.40)
 
-	input_layer 	:= n.NeuronLayers[0]
-	layer1		:= n.NeuronLayers[1]
-	layer2 		:= n.NeuronLayers[2]
+	input_layer 	:= n.neuronLayers[0]
+	layer1		:= n.neuronLayers[1]
+	layer2 		:= n.neuronLayers[2]
 
 
 	for _, neuronInLayer1 := range layer1.Neurons {
@@ -399,7 +399,7 @@ func CreateSimpleNetwork() (n *NeuralNetwork) {
 
 
 	// declare neural network
-	neuronNetwork := NeuralNetwork{NeuronLayers: neuronLayers, learningRate: 0.5, precision:0.0003, ActivationFunction: new(LogisticActivationFunction)}
+	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers, learningRate: 0.5, precision:0.0003, ActivationFunction: new(LogisticActivationFunction)}
 	// TODO: Remove the TrainingSet from creation of network. It is not needed at this point and can be done later with other functions.
 
 	return &neuronNetwork
