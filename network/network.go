@@ -38,6 +38,23 @@ const (
 
 )
 
+type LearningRate int
+
+const (
+	Fast LearningRate = iota
+	Normal
+	Slow
+	VerySlow
+
+)
+
+type TrainerMode int
+
+const (
+	Online TrainerMode = iota
+	Offline
+)
+
 
 type NeuralNetwork struct{
 	neuronLayers       []*NeuronLayer
@@ -50,7 +67,9 @@ type NeuralNetwork struct{
 
 
 	// functions
-	ActivationFunction ActivationFunction
+	activationFunction ActivationFunction
+
+	normalizer Normalizer
 
 	trainer            Trainer
 
@@ -60,11 +79,13 @@ type NeuralNetwork struct{
 }
 
 func (n *NeuralNetwork)Train(trainingSet        []TrainingSample){
+	normalizeTrainingInput(trainingSet, n.normalizer)
 	n.trainer.train(n, trainingSet)
 }
 
-func (n *NeuralNetwork)Calculate(trainingSampleInput []float32)[]float32{
-	return n.feedForward(trainingSampleInput)
+func (n *NeuralNetwork)Calculate(input []float32)[]float32{
+	normalizedInput	:= n.normalizer.normalizeVector(input)
+	return n.feedForward(normalizedInput)
 }
 
 func (n *NeuralNetwork)SetPrecision(precision Precision){
@@ -78,6 +99,33 @@ func (n *NeuralNetwork)SetPrecision(precision Precision){
 	case VeryHigh:
 		n.precision = 0.0001
 	}
+}
+
+func (n *NeuralNetwork)SetLearningRate(learningRate LearningRate){
+	switch learningRate {
+	case Fast:
+		n.learningRate = 0.01
+	case Normal:
+		n.learningRate = 0.02
+	case Slow:
+		n.learningRate = 0.005
+	case VerySlow:
+		n.learningRate = 0.001
+	}
+}
+
+func (n *NeuralNetwork)SetTrainerMode(trainerMode TrainerMode){
+	switch trainerMode {
+	case Online:
+		n.trainer = new(OnlineTrainer)
+	case Offline:
+		n.trainer = new(OfflineTrainer)
+	}
+}
+
+
+func (n *NeuralNetwork)SetDebugMode(){
+	n.debug = true
 }
 
 

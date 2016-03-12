@@ -25,3 +25,21 @@ func (l *LogisticActivationFunction) min() float32 {
 func (l *LogisticActivationFunction) max() float32 {
 	return 1.0
 }
+
+type HyperbolicTangentActivationFunction struct {}
+
+func (h *HyperbolicTangentActivationFunction) Activate (input float32) float32 {
+	return float32(1.7159 * math.Atan(float64((2/float32(3)) * input)))
+}
+
+func (h *HyperbolicTangentActivationFunction) Derivative (input float32) float32 {
+	return float32(51477/float32((20000*input*input) + 45000))
+}
+
+func (h *HyperbolicTangentActivationFunction) min() float32 {
+	return -1.0
+}
+
+func (h *HyperbolicTangentActivationFunction) max() float32 {
+	return 1.0
+}

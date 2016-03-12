@@ -399,7 +399,7 @@ func CreateSimpleNetwork() (n *NeuralNetwork) {
 
 
 	// declare neural network
-	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers, learningRate: 0.5, precision:0.0003, ActivationFunction: new(LogisticActivationFunction)}
+	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers, learningRate: 0.5, precision:0.0003, activationFunction: new(LogisticActivationFunction)}
 	// TODO: Remove the TrainingSet from creation of network. It is not needed at this point and can be done later with other functions.
 
 	return &neuronNetwork

@@ -2,7 +2,9 @@ package network
 
 import (
 	"math/rand"
-	"time"
+	//"time"
+	"math"
+	//"fmt"
 )
 
 
@@ -18,7 +20,7 @@ func createNeuronLayer(neuronNumber int, bias float32) NeuronLayer{
 func CreateNetwork(topology []int) (n *NeuralNetwork) {
 
 
-	// EXAMPLE CreateNetwork ( float32{2,3,3,4}, []int{ 0.45, 0.3, 0.5, 0 }
+	// EXAMPLE CreateNetwork ([]int{ 2, 2, 3}
 
 	var neuronLayers []*NeuronLayer
 	// BUILD LAYERS and append them
@@ -33,7 +35,6 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	}
 
 	// BUILD THE CONNECTIONS BETWEEN LAYERS
-	// TODO: test this forloop for different topologies
 	for layerIndex, layer := range neuronLayers[:len(neuronLayers)-1] {
 		for _, neuronInThisLayer := range layer.Neurons {
 			for _, neuronInNextLayer := range neuronLayers[layerIndex+1].Neurons {
@@ -48,10 +49,14 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 
 	// declare neural network
 	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers,
-		ActivationFunction: new(LogisticActivationFunction),
-		learningRate: 0.02,
-		precision: 0.005,
-		trainer:new(OnlineTrainer)}
+		activationFunction: new(HyperbolicTangentActivationFunction),
+		normalizer: new(ZscoresNormalizer)} //HyperbolicTangentActivationFunction LogisticActivationFunction
+
+	neuronNetwork.SetPrecision(Medium)
+	neuronNetwork.SetLearningRate(Normal)
+	neuronNetwork.SetTrainerMode(Online)
+
+	//neuronNetwork.SetDebugMode()
 
 
 
@@ -59,13 +64,12 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 }
 
 func createRandomBiases(length int)[]float32{
-	source := rand.NewSource(time.Now().UnixNano())
-	random := rand.New(source)
 
 	result := make([]float32, length)
 	for i := 0; i<length; i++{
 		if(i != length-1){
-			result[i] = random.Float32()
+			//result[i] = random.Float32()
+			result[i] = 1
 		}
 	}
 	return result
@@ -75,8 +79,9 @@ func initializeWeightsAndInputConnections(neuronLayers []*NeuronLayer) {
 
 	// use a different seed every time for weight initialization
 	// TODO: maybe we can use a static seed during testing for result comparison?
-	source := rand.NewSource(time.Now().UnixNano())
-	random := rand.New(source)
+	//this is not ok, random is the same for all weights
+	/*source := rand.NewSource(time.Now().UnixNano())
+	random := rand.New(source)*/
 
 	for i, layer := range neuronLayers {
 		if i==0 {
@@ -84,11 +89,28 @@ func initializeWeightsAndInputConnections(neuronLayers []*NeuronLayer) {
 		}
 		for _, neuronInThisLayer := range layer.Neurons {
 			for _, neuronInPreviousLayer := range neuronLayers[i-1].Neurons {
-				weight := random.Float32()
+				//weight := random.Float32()
+				weight := calculateWeight(neuronLayers[i-1])
 				w := &Connection{From: neuronInPreviousLayer, To: neuronInThisLayer, Weight: weight}
 
 				neuronInThisLayer.InputConnections = append( neuronInThisLayer.InputConnections, w )
 			}
 		}
 	}
+}
+
+
+/**
+ * weight is from interval (−1,√d)(1,√d), where d is the number of inputs to a given neuron
+ * see: http://stats.stackexchange.com/questions/47590/what-are-good-initial-weights-in-a-neural-network
+ */
+func calculateWeight(layerFrom *NeuronLayer)float32{
+	numOfInputs := len(layerFrom.Neurons)
+	interval := 1 / float32(math.Sqrt(float64(numOfInputs)))
+	return calculateRandomNumInInterval(interval)
+	
+}
+
+func calculateRandomNumInInterval(interval float32)float32{
+	return (rand.Float32()*interval*2)-interval
 }
