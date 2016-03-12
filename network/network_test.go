@@ -13,6 +13,18 @@ func TestSimpleNN(t *testing.T){
 	network, trainingSamples := createSimpleNN()
 
 	network.Train(trainingSamples)
+	result := network.Calculate([]float32{0.05, 0.10})
+	fmt.Println("network test with factory result: "+strconv.FormatFloat(float64(result[0]), 'E', -1, 32) + " " + strconv.FormatFloat(float64(result[1]), 'E', -1, 32))
+
+}
+
+func TestDebugSimpleNN(t *testing.T){
+
+	network, trainingSamples := createSimpleNN()
+
+	network.SetDebugMode()
+
+	network.Train(trainingSamples)
 	result := network.Calculate(trainingSamples[0].Input)
 	fmt.Println("network test with factory result: "+strconv.FormatFloat(float64(result[0]), 'E', -1, 32) + " " + strconv.FormatFloat(float64(result[1]), 'E', -1, 32))
 
@@ -21,6 +33,7 @@ func TestSimpleNN(t *testing.T){
 func TestXOROnline(t *testing.T){
 
 	network := CreateNetwork([]int{2, 2, 1})
+	//network.SetPrecision(VeryHigh)
 
 	xorTrainingSet := createXORTrainingSet()
 

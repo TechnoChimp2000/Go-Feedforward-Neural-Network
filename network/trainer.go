@@ -26,6 +26,9 @@ func (o *OnlineTrainer) train(n *NeuralNetwork, trainingSet        []TrainingSam
 			currentlyLearningSample := trainingSet[totalSamplesTrained]
 			actual := n.feedForward(currentlyLearningSample.Input)
 			_error := n.calculateTotalError(actual, currentlyLearningSample.Output)
+			if n.debug {
+				fmt.Println("Error: ",_error)
+			}
 
 			/**
 			 * if error is small enough check previous training samples if they are still trained in neural network
@@ -66,6 +69,11 @@ func (o *OnlineTrainer) train(n *NeuralNetwork, trainingSet        []TrainingSam
 				 * apply backpropagation if training sample isn't trained yet
 				 */
 				deltas := n.backPropagate(currentlyLearningSample.Output)
+
+				if n.debug {
+					fmt.Println("Deltas: ", deltas)
+				}
+
 				n.updateWeightsFromDeltas(deltas)
 			}
 
@@ -132,7 +140,7 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) (deltas ma
 
 				// Second, in same neuron for loop, calculate F1 and F2
 				factor1 := deltas[i][neuronIndex]
-				factor2 := n.ActivationFunction.Derivative(neuron.output)
+				factor2 := n.activationFunction.Derivative(neuron.output)
 
 				deltas[i-1] = append(deltas[i-1], factor1 * factor2)
 			}
@@ -148,7 +156,7 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) (deltas ma
 					factor1 		+= deltas[i][neuronInNextLayerIndex] * weight
 				}
 
-				factor2 	:= n.ActivationFunction.Derivative(neuron.output)
+				factor2 	:= n.activationFunction.Derivative(neuron.output)
 				deltas[i-1] 	= append(deltas[i-1], factor1*factor2)
 			}
 		}
@@ -240,5 +248,5 @@ func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 func (n *NeuralNetwork) calculateNeuronOutput(neuron *Neuron, neuronLayerIndex int){
 	propagation := n.propagate(neuron.InputConnections)
 	bias := n.neuronLayers[neuronLayerIndex - 1].Bias
-	neuron.output = n.ActivationFunction.Activate(propagation + bias * 1.0)
+	neuron.output = n.activationFunction.Activate(propagation + bias * 1.0)
 }
