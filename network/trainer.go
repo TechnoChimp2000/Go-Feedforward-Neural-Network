@@ -70,9 +70,9 @@ func (o *OnlineTrainer) train(n *NeuralNetwork, trainingSet        []TrainingSam
 				 */
 				deltas := n.backPropagate(currentlyLearningSample.Output)
 
-				if n.debug {
+				/*if n.debug {
 					fmt.Println("Deltas: ", deltas)
-				}
+				}*/
 
 				n.updateWeightsFromDeltas(deltas)
 			}
