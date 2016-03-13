@@ -23,15 +23,15 @@ func normalizeTrainingInput(trainingSet []TrainingSample, normalizer Normalizer)
 
 }
 
-type ZscoresNormalizer struct {}
+type ZscoreNormalizer struct {}
 
 /**
  * Z-scores normalized vector has mean 0 and standard deviation 1
  */
-func(n *ZscoresNormalizer)normalizeVector(vector []float32) []float32{
+func(n *ZscoreNormalizer)normalizeVector(vector []float32) []float32{
 	var mean float32
 	for _, value := range vector {
-		mean = mean+ value
+		mean = mean + value
 	}
 
 	mean = mean/float32(len(vector))
@@ -51,13 +51,11 @@ func(n *ZscoresNormalizer)normalizeVector(vector []float32) []float32{
 
 	var result =  make([]float32, len(vector))
 
-	if len(vector) > 1 {
+	if len(vector) > 1 && deviation!= 0{
 
 		//fmt.Println("(1.1) Vector has value {1}", vector)
 		for index, _ := range vector {
-			if deviation!= 0 {
-				result[index] = (vector[index] - mean) / deviation
-			}
+			result[index] = (vector[index] - mean) / deviation
 		}
 		//fmt.Println("(2.1) Normalized has value {1}", result)
 
@@ -66,6 +64,15 @@ func(n *ZscoresNormalizer)normalizeVector(vector []float32) []float32{
 	}
 	return result
 
+}
+
+type SkipNormalizer struct {}
+
+/**
+ * doesn't normalize, just returns input
+ */
+func(s *SkipNormalizer)normalizeVector(vector []float32) []float32{
+	return vector
 }
 
 
