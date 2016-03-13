@@ -55,6 +55,37 @@ func TestXOROnline(t *testing.T){
 
 }
 
+func TestRandomNN1(t *testing.T){
+	network, trainingSamples := createRandomNN(5,5,5)
+
+
+	network.Train(trainingSamples)
+	result := network.Calculate(trainingSamples[0].Input)
+	fmt.Println("random network test 1 result: ", result)
+}
+
+
+func TestRandomNN2(t *testing.T){
+	network, trainingSamples := createRandomNN(100,3,3)
+
+
+	network.Train(trainingSamples)
+	result := network.Calculate(trainingSamples[0].Input)
+	fmt.Println("random network test 2 result: ", result)
+}
+
+func TestRandomNN3(t *testing.T){
+	network, trainingSamples := createRandomNN(150,2,1)
+
+	network.SetPrecision(Rough)
+	network.SetDebugMode()
+
+
+	network.Train(trainingSamples)
+	result := network.Calculate(trainingSamples[0].Input)
+	fmt.Println("random network test 3 result: ", result)
+}
+
 
 
 
