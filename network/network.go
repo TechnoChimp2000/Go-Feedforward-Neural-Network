@@ -55,6 +55,20 @@ const (
 	Offline
 )
 
+type Activation int
+
+const (
+	Logistic Activation = iota
+	HyperbolicTangens
+)
+
+type NormalizerType int
+
+const (
+	Zscore NormalizerType = iota
+	None
+)
+
 
 type NeuralNetwork struct{
 	neuronLayers       []*NeuronLayer
@@ -88,6 +102,8 @@ func (n *NeuralNetwork)Calculate(input []float32)[]float32{
 	return n.feedForward(normalizedInput)
 }
 
+
+
 func (n *NeuralNetwork)SetPrecision(precision Precision){
 	switch precision {
 	case Rough:
@@ -120,6 +136,24 @@ func (n *NeuralNetwork)SetTrainerMode(trainerMode TrainerMode){
 		n.trainer = new(OnlineTrainer)
 	case Offline:
 		n.trainer = new(OfflineTrainer)
+	}
+}
+
+func (n *NeuralNetwork)SetActivationFunction(activation Activation){
+	switch activation {
+	case Logistic:
+		n.activationFunction = new(LogisticActivationFunction)
+	case HyperbolicTangens:
+		n.activationFunction = new(HyperbolicTangentActivationFunction)
+	}
+}
+
+func (n *NeuralNetwork)SetNormalizer(normalizer NormalizerType){
+	switch normalizer {
+	case Zscore:
+		n.normalizer = new(ZscoreNormalizer)
+	case None:
+		n.normalizer = new(SkipNormalizer)
 	}
 }
 

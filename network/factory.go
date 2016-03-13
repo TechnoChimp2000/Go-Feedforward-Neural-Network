@@ -48,16 +48,13 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	initializeWeightsAndInputConnections(neuronLayers)
 
 	// declare neural network
-	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers,
-		activationFunction: new(HyperbolicTangentActivationFunction),
-		normalizer: new(ZscoresNormalizer)} //HyperbolicTangentActivationFunction LogisticActivationFunction
+	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers}
 
 	neuronNetwork.SetPrecision(Medium)
 	neuronNetwork.SetLearningRate(Normal)
 	neuronNetwork.SetTrainerMode(Online)
-
-	//neuronNetwork.SetDebugMode()
-
+	neuronNetwork.SetActivationFunction(HyperbolicTangens)
+	neuronNetwork.SetNormalizer(Zscore)
 
 
 	return &neuronNetwork
