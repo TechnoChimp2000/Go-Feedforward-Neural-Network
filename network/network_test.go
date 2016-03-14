@@ -56,7 +56,7 @@ func TestXOROnline(t *testing.T){
 }
 
 func TestRandomNN1(t *testing.T){
-	network, trainingSamples := createRandomNN(5,5,5)
+	network, trainingSamples := createRandomNN(5,5,1)
 
 
 	network.Train(trainingSamples)

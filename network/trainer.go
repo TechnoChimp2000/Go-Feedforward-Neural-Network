@@ -25,7 +25,7 @@ func (o *OnlineTrainer) train(n *NeuralNetwork, trainingSet        []TrainingSam
 
 			currentlyLearningSample := trainingSet[totalSamplesTrained]
 			actual := n.feedForward(currentlyLearningSample.Input)
-			_error := n.calculateTotalError(actual, currentlyLearningSample.Output)
+			_error := n.costFunction.calculateTotalError(actual, currentlyLearningSample.Output)
 			if n.debug {
 				fmt.Println("Error: ",_error)
 			}
@@ -68,13 +68,13 @@ func (o *OnlineTrainer) train(n *NeuralNetwork, trainingSet        []TrainingSam
 				/**
 				 * apply backpropagation if training sample isn't trained yet
 				 */
-				deltas := n.backPropagate(currentlyLearningSample.Output)
+				n.backPropagate(currentlyLearningSample.Output)
 
 				/*if n.debug {
 					fmt.Println("Deltas: ", deltas)
 				}*/
 
-				n.updateWeightsFromDeltas(deltas)
+				n.updateWeightsFromDeltas()
 			}
 
 		}
@@ -109,7 +109,7 @@ func (n* NeuralNetwork) testNeuralNetwork(numSamples int, trainingSet        []T
 
 
 		actual := n.feedForward(trainingSample.Input)
-		_error := n.calculateTotalError(actual, trainingSample.Output)
+		_error := n.costFunction.calculateTotalError(actual, trainingSample.Output)
 
 		if _error >= n.precision {
 			return false
@@ -119,9 +119,9 @@ func (n* NeuralNetwork) testNeuralNetwork(numSamples int, trainingSet        []T
 
 }
 
-func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) (deltas map[int][]float32) {  // deltas[indexLayer][indexNeuron]
+func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) {  // deltas[indexLayer][indexNeuron]
 
-	deltas = make(map[int][]float32)
+
 
 	for i := len(n.neuronLayers) - 1; i > 0; i-- {
 		/**
@@ -135,42 +135,29 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) (deltas ma
 
 			for neuronIndex, neuron := range n.neuronLayers[i].Neurons {
 
-				// First calculate the last layer deltas
-				deltas[i] = append(deltas[i], neuron.output - trainingSampleOutput[neuronIndex] ) // map[2:[0.7413651 -0.21707153]]
 
-				// Second, in same neuron for loop, calculate F1 and F2
-				factor1 := deltas[i][neuronIndex]
-				factor2 := n.activationFunction.Derivative(neuron.output)
-
-				deltas[i-1] = append(deltas[i-1], factor1 * factor2)
+				n.costFunction.calculateWeightDeltaInLastLayer(n, neuron, neuronIndex, i, trainingSampleOutput)
 			}
 
 		} else {
 			for neuronIndex, neuron := range n.neuronLayers[i].Neurons {
 
-				var factor1 float32
-
-				for neuronInNextLayerIndex, neuronInNextLayer := range neuron.ConnectedToInNextLayer {
-
-					var weight float32 	= neuronInNextLayer.InputConnections[neuronIndex].Weight
-					factor1 		+= deltas[i][neuronInNextLayerIndex] * weight
-				}
-
-				factor2 	:= n.activationFunction.Derivative(neuron.output)
-				deltas[i-1] 	= append(deltas[i-1], factor1*factor2)
+				n.costFunction.calculateWeightDelta(n, neuron, neuronIndex, i, trainingSampleOutput)
 			}
 		}
 	}
-	return deltas
+
 }
 
-func (n *NeuralNetwork) updateWeightsFromDeltas(deltas map[int][]float32 ) {
+func (n *NeuralNetwork) updateWeightsFromDeltas() {
 
 	for indexLayer, layer := range n.neuronLayers[1:] {
 		for indexNeuron, neuron := range layer.Neurons {
 			for _, inputConnection := range neuron.InputConnections {
 
-				update := deltas[indexLayer][indexNeuron]
+
+				update := n.neuronLayers[indexLayer].deltas[indexNeuron]
+
 				weightUpdated := inputConnection.Weight - n.learningRate * update * inputConnection.From.output
 
 				inputConnection.Weight = weightUpdated
@@ -179,15 +166,6 @@ func (n *NeuralNetwork) updateWeightsFromDeltas(deltas map[int][]float32 ) {
 	}
 }
 
-
-func (n *NeuralNetwork) calculateTotalError(actual []float32, output []float32) float32{
-	var retval float32 = 0.0
-	for outputIndex, singleOutput := range output{
-		factor := singleOutput - actual[outputIndex]
-		retval += 0.5 * factor * factor
-	}
-	return retval
-}
 
 func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 	var actual []float32
