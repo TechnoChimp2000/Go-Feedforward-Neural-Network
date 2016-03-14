@@ -159,7 +159,7 @@ func (n * NeuralNetwork) runTrainOffline(trainingSet []TrainingSample) (success 
 		}
 	}
 
-	fmt.Println(n.calculateTotalError( n.feedForward(trainingSet[0].Input), trainingSet[0].Output ))
+	fmt.Println(n.costFunction.calculateTotalError( n.feedForward(trainingSet[0].Input), trainingSet[0].Output ))
 
 
 	return success
@@ -183,20 +183,20 @@ func (n * NeuralNetwork) runBackPropagation(trainingSet []TrainingSample) (succe
 
 	for i := 0; i<10000; i++ {
 		actual = n.feedForward(trainingSet[0].Input)
-		error = n.calculateTotalError( actual, trainingSet[0].Output )
+		error = n.costFunction.calculateTotalError( actual, trainingSet[0].Output )
 
 		//fmt.Printf("Total Error at %v iteration: %v\n",i, error)
 		//fmt.Printf("RealOutput Value: %v\n",n.TrainingSet[0].Output)
 		//fmt.Printf("FeelForward Value: %v\n",actual)
 		//fmt.Printf("TotalError: %v\n", error)
 
-		deltas := n.backPropagate( sample_output )
-		n.updateWeightsFromDeltas(deltas)
+		n.backPropagate( sample_output )
+		n.updateWeightsFromDeltas()
 		//fmt.Println(n.calculateTotalError( actual, n.TrainingSet[0].Output ))
 	}
 
 	// final values
-	error = n.calculateTotalError( actual, trainingSet[0].Output )
+	error = n.costFunction.calculateTotalError( actual, trainingSet[0].Output )
 	output = n.feedForward(trainingSet[0].Input)
 
 	fmt.Println("This is the final output:", output )
@@ -467,7 +467,7 @@ func TrainOffline( iterations int, n *NeuralNetwork, trainingSet []TrainingSampl
 
 			// FEED FORWARD
 			actual := n.feedForward(trainingSample.Input)
-			_error := n.calculateTotalError(actual, trainingSample.Output)
+			_error := n.costFunction.calculateTotalError(actual, trainingSample.Output)
 
 			//fmt.Printf("FeedForward prediction: %v\n", actual)
 			errorTotal += _error
@@ -488,9 +488,9 @@ func TrainOffline( iterations int, n *NeuralNetwork, trainingSet []TrainingSampl
 		for i, trainingSample := range trainingSet {
 
 			if i == 0 {
-				deltas = n.backPropagate(trainingSample.Output)
+				n.backPropagate(trainingSample.Output)
 			} else {
-				deltas_buffer = n.backPropagate(trainingSample.Output)
+				n.backPropagate(trainingSample.Output)
 
 				for indexLayer, layer := range deltas_buffer {
 					for indexWeight, weight := range layer {
@@ -509,7 +509,7 @@ func TrainOffline( iterations int, n *NeuralNetwork, trainingSet []TrainingSampl
 		}
 
 
-		n.updateWeightsFromDeltas(deltas)
+		n.updateWeightsFromDeltas()
 	}
 	return errors
 }

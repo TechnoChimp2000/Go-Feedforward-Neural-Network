@@ -14,7 +14,8 @@ func createNeuronLayer(neuronNumber int, bias float32) NeuronLayer{
 	for i :=0; i< neuronNumber; i++ {
 		neurons = append(neurons, new(Neuron))
 	}
-	return NeuronLayer{Neurons: neurons, Bias: bias}
+
+	return NeuronLayer{Neurons: neurons, Bias: bias, deltas:make([]float32, neuronNumber)}
 }
 
 func CreateNetwork(topology []int) (n *NeuralNetwork) {
@@ -48,13 +49,14 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	initializeWeightsAndInputConnections(neuronLayers)
 
 	// declare neural network
-	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers}
+	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers, costFunction: new(CrossEntrophyCostFunction)}
 
 	neuronNetwork.SetPrecision(Medium)
 	neuronNetwork.SetLearningRate(Normal)
 	neuronNetwork.SetTrainerMode(Online)
-	neuronNetwork.SetActivationFunction(HyperbolicTangens)
+	neuronNetwork.SetActivationFunction(Logistic)
 	neuronNetwork.SetNormalizer(Zscore)
+
 
 
 	return &neuronNetwork

@@ -20,6 +20,7 @@ type NeuronLayer struct{
 	Neurons []*Neuron
 	layer   uint8
 	Bias    float32
+	deltas []float32
 }
 
 
@@ -85,7 +86,9 @@ type NeuralNetwork struct{
 
 	normalizer Normalizer
 
-	trainer            Trainer
+	trainer Trainer
+
+	costFunction CostFunction
 
 	//if debug is true nn processing is logged
 	debug              bool
