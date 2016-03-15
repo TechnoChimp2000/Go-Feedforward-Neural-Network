@@ -49,13 +49,14 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	initializeWeightsAndInputConnections(neuronLayers)
 
 	// declare neural network
-	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers, costFunction: new(CrossEntrophyCostFunction)}
+	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers}
 
 	neuronNetwork.SetPrecision(Medium)
 	neuronNetwork.SetLearningRate(Normal)
 	neuronNetwork.SetTrainerMode(Online)
 	neuronNetwork.SetActivationFunction(Logistic)
 	neuronNetwork.SetNormalizer(Zscore)
+	neuronNetwork.SetCostFunction(CrossEntrophy)
 
 
 
