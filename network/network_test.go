@@ -75,7 +75,7 @@ func TestRandomNN2(t *testing.T){
 }
 
 func TestRandomNN3(t *testing.T){
-	network, trainingSamples := createRandomNN(145,3,1)
+	network, trainingSamples := createRandomNN(145,3,10)
 
 	//network.SetPrecision(Rough)
 	network.SetDebugMode()
@@ -84,6 +84,19 @@ func TestRandomNN3(t *testing.T){
 	network.Train(trainingSamples)
 	result := network.Calculate(trainingSamples[0].Input)
 	fmt.Println("random network test 3 result: ", result)
+}
+
+func TestRandomNN4(t *testing.T){
+	network, trainingSamples := createRandomNN(2000,3,1)
+
+	//network.SetPrecision(Rough)
+	network.SetDebugMode()
+
+
+
+	network.Train(trainingSamples)
+	result := network.Calculate(trainingSamples[0].Input)
+	fmt.Println("random network test 4 result: ", result)
 }
 
 func BenchmarkRandomNN1(*testing.B){

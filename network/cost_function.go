@@ -16,7 +16,7 @@ func (q *QuadraticCostFunction) calculateTotalError(actual []float32, output []f
 		factor := singleOutput - actual[outputIndex]
 		retval += 0.5 * factor * factor
 	}
-	return retval
+	return retval/float32(len(output))
 }
 
 func (q *QuadraticCostFunction) calculateWeightDeltaInLastLayer(n *NeuralNetwork, neuron *Neuron, neuronIndex int, neuronLayerIndex int, trainingSampleOutput []float32) {
@@ -59,7 +59,7 @@ func (c *CrossEntrophyCostFunction) calculateTotalError(actual []float32, output
 		retval += factor
 	}
 	retval = -retval
-	return retval
+	return retval/float32(len(output))
 }
 
 func (c *CrossEntrophyCostFunction) calculateWeightDeltaInLastLayer(n *NeuralNetwork, neuron *Neuron, neuronIndex int, neuronLayerIndex int, trainingSampleOutput []float32) {
