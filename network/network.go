@@ -70,6 +70,13 @@ const (
 	None
 )
 
+type CostFunctionType int
+
+const (
+	CrossEntrophy CostFunctionType = iota
+	Quadratic
+)
+
 
 type NeuralNetwork struct{
 	neuronLayers       []*NeuronLayer
@@ -103,6 +110,20 @@ func (n *NeuralNetwork)Train(trainingSet        []TrainingSample){
 func (n *NeuralNetwork)Calculate(input []float32)[]float32{
 	normalizedInput	:= n.normalizer.normalizeVector(input)
 	return n.feedForward(normalizedInput)
+}
+
+
+func (n *NeuralNetwork)SetCostFunction(costFunction CostFunctionType){
+	switch costFunction {
+	case CrossEntrophy:
+		/**
+		 * cross-entrophy cost function is only compatible with logistic activation function
+		 */
+		n.activationFunction = new(LogisticActivationFunction)
+		n.costFunction = new(CrossEntrophyCostFunction)
+	case Quadratic:
+		n.costFunction = new(QuadraticCostFunction)
+	}
 }
 
 
@@ -143,6 +164,8 @@ func (n *NeuralNetwork)SetTrainerMode(trainerMode TrainerMode){
 }
 
 func (n *NeuralNetwork)SetActivationFunction(activation Activation){
+	//TODO: check if cost function is cross-entropy and switch to quadratic is activation is hyperbolic tangens - use reflect package
+
 	switch activation {
 	case Logistic:
 		n.activationFunction = new(LogisticActivationFunction)
