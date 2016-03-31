@@ -55,7 +55,7 @@ func StartTesting() (tests []Test) {
 	// create a simple network with 4-3-3; one input layer, one hidden layer with a bias unit and an output layer
 
 	neuronNetwork := CreateSimpleNetwork()
-
+	neuronNetwork.SetCostFunction(Quadratic)
 	trainingSet := CreateSimpleTrainingSet()
 
 
@@ -108,6 +108,7 @@ func StartTesting() (tests []Test) {
 	weights2 := neuronNetwork2.InitializeTestWeights()
 	neuronNetwork2.InitializeInputConnections( weights2 )
 	neuronNetwork2.InsertOneTrainingSample(trainingSet)
+	neuronNetwork2.SetCostFunction(Quadratic)
 
 	TrainOffline.Success				= neuronNetwork2.runTrainOffline(trainingSet)
 	TrainOffline.Name				= "TrainOffline"
@@ -128,14 +129,6 @@ func (n * NeuralNetwork) runTrainOffline(trainingSet []TrainingSample) (success 
 		-3.8684173,
 		2.8618135,
 		2.925688,
-		0.37851417,
-		0.65702754,
-		0.47730425,
-		0.7546077,
-		-3.8930032,
-		-3.8684456,
-		2.8618417,
-		2.9257164,
 	}
 
 
@@ -154,7 +147,6 @@ func (n * NeuralNetwork) runTrainOffline(trainingSet []TrainingSample) (success 
 					success = false
 				}
 				i++
-
 			}
 		}
 	}
@@ -183,6 +175,8 @@ func (n * NeuralNetwork) runBackPropagation(trainingSet []TrainingSample) (succe
 
 	for i := 0; i<10000; i++ {
 		actual = n.feedForward(trainingSet[0].Input)
+
+		// actual: [0.75136507 0.7729285]; output: [0.01 0.99]
 		error = n.costFunction.calculateTotalError( actual, trainingSet[0].Output )
 
 		//fmt.Printf("Total Error at %v iteration: %v\n",i, error)
@@ -200,10 +194,11 @@ func (n * NeuralNetwork) runBackPropagation(trainingSet []TrainingSample) (succe
 	output = n.feedForward(trainingSet[0].Input)
 
 	fmt.Println("This is the final output:", output )
-	fmt.Printf("Sample Output: %v, Final Prediction: %v, Final Error: %v\n",trainingSet[0].Output, output, error) //Sample Output: [0.01 0.99], Final Prediction: [0.015913634 0.9840643], Final Error: 3.510851e-05
+	fmt.Println("This is the final error:", error )
+	//fmt.Printf("Sample Output: %v, Final Prediction: %v, Final Error: %v\n",trainingSet[0].Output, output, error) //Sample Output: [0.01 0.99], Final Prediction: [0.015913634 0.9840643], Final Error: 3.510851e-05
 
 
-	fmt.Println("These are the final weights:")
+	//fmt.Println("These are the final weights:")
 	for _, layer := range n.neuronLayers {
 		for _, neuron := range layer.Neurons {
 			for _, inputConnection := range neuron.InputConnections {
@@ -468,17 +463,17 @@ func TrainOffline( iterations int, n *NeuralNetwork, trainingSet []TrainingSampl
 			// FEED FORWARD
 			actual := n.feedForward(trainingSample.Input)
 			_error := n.costFunction.calculateTotalError(actual, trainingSample.Output)
-
+			//error = n.costFunction.calculateTotalError( actual, trainingSet[0].Output )
 			//fmt.Printf("FeedForward prediction: %v\n", actual)
 			errorTotal += _error
-			fmt.Println(actual)
+			//fmt.Println(actual)
 
 
 			//fmt.Println(_error)
 		}
 
 		errorTotal = errorTotal / float32(len(trainingSet)) + regularizationTerm
-		fmt.Println("errorTotal:",errorTotal)
+		//fmt.Println("errorTotal:",errorTotal)
 		errors = append(errors, errorTotal)
 
 
