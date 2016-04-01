@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"fmt"
 	"encoding/binary"
-
 	"github.com/Go-Feedforward-Neural-Network/network"
 )
 

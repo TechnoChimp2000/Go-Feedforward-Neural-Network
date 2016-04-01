@@ -30,7 +30,7 @@ type Test struct {
 
 func StartTesting() (tests []Test) {
 
-	fmt.Println("Testing of functions ... ")
+	//fmt.Println("Testing of functions ... ")
 
 	// logistic activation function
 	var LAF LogisticActivationFunction
@@ -151,8 +151,8 @@ func (n * NeuralNetwork) runTrainOffline(trainingSet []TrainingSample) (success 
 		}
 	}
 
-	fmt.Println(n.costFunction.calculateTotalError( n.feedForward(trainingSet[0].Input), trainingSet[0].Output ))
-
+	//fmt.Println(n.costFunction.calculateTotalError( n.feedForward(trainingSet[0].Input), trainingSet[0].Output ))
+	n.costFunction.calculateTotalError( n.feedForward(trainingSet[0].Input), trainingSet[0].Output )
 
 	return success
 }
