@@ -1,8 +1,6 @@
 package network
 
-import (
-	"fmt"
-)
+
 
 // a set of Methods designed to test the various methods of the neural Network
 
@@ -170,14 +168,14 @@ func (n * NeuralNetwork) runBackPropagation(trainingSet []TrainingSample) (succe
 		}
 	}
 
-	var actual []float32
-	var error float32
+//	var actual []float32
+//	var error float32
 
 	for i := 0; i<10000; i++ {
-		actual = n.feedForward(trainingSet[0].Input)
+//		actual = n.feedForward(trainingSet[0].Input)
 
 		// actual: [0.75136507 0.7729285]; output: [0.01 0.99]
-		error = n.costFunction.calculateTotalError( actual, trainingSet[0].Output )
+		//error = n.costFunction.calculateTotalError( actual, trainingSet[0].Output )
 
 		//fmt.Printf("Total Error at %v iteration: %v\n",i, error)
 		//fmt.Printf("RealOutput Value: %v\n",n.TrainingSet[0].Output)
@@ -190,23 +188,24 @@ func (n * NeuralNetwork) runBackPropagation(trainingSet []TrainingSample) (succe
 	}
 
 	// final values
-	error = n.costFunction.calculateTotalError( actual, trainingSet[0].Output )
+//	error = n.costFunction.calculateTotalError( actual, trainingSet[0].Output )
 	output = n.feedForward(trainingSet[0].Input)
 
-	fmt.Println("This is the final output:", output )
-	fmt.Println("This is the final error:", error )
+	//fmt.Println("This is the final output:", output )
+	//fmt.Println("This is the final error:", error )
 	//fmt.Printf("Sample Output: %v, Final Prediction: %v, Final Error: %v\n",trainingSet[0].Output, output, error) //Sample Output: [0.01 0.99], Final Prediction: [0.015913634 0.9840643], Final Error: 3.510851e-05
 
 
 	//fmt.Println("These are the final weights:")
+	/*
 	for _, layer := range n.neuronLayers {
 		for _, neuron := range layer.Neurons {
 			for _, inputConnection := range neuron.InputConnections {
-				fmt.Println(inputConnection.Weight)
+				//fmt.Println(inputConnection.Weight)
 			}
 		}
 	}
-
+	*/
 	real_output := []float32{ 0.015913634, 0.9840643 }
 
 	for i, _ := range real_output {
