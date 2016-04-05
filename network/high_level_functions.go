@@ -27,7 +27,7 @@ func (n *NeuralNetwork) GetAccuracy(trainData *[]TrainingSample) (accuracy float
 		predictionDetailed	:= n.Calculate(samples.Input)
 		predictionNormalized 	:= Predict(predictionDetailed)
 
-		isPredictionCorrect := CompareTwoSlices(predictionNormalized, samples.Output)
+		isPredictionCorrect := CompareTwoSlicesFloat32(predictionNormalized, samples.Output)
 
 		if isPredictionCorrect == true {
 			correctPredictions++
@@ -65,7 +65,7 @@ func Predict(input []float32) []float32 {
 }
 
 // COMPARES TWO VECTORS AND CHECKS IF THEY ARE THE SAME
-func CompareTwoSlices(input1, input2 []float32) bool {
+func CompareTwoSlicesFloat32(input1, input2 []float32) bool {
 
 	for k,v := range input1 {
 
