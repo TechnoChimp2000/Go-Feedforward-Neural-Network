@@ -3,19 +3,20 @@ package network
 import (
 	"strconv"
 	"fmt"
+	"reflect"
 )
 
 type Trainer interface{
-	train(n *NeuralNetwork, trainingSet        []TrainingSample)
+	train(n *NeuralNetwork, trainingSet []TrainingSample)
 }
-
 
 type OnlineTrainer struct{}
 
-func (o *OnlineTrainer) train(n *NeuralNetwork, trainingSet        []TrainingSample){
+func (o *OnlineTrainer) train(n *NeuralNetwork, trainingSet []TrainingSample){
 	if n.debug {
 		fmt.Println("OnlineTrainer start")
 	}
+
 
 	//TODO validate input
 	totalSamplesTrained := 0
@@ -87,11 +88,103 @@ func (o *OnlineTrainer) train(n *NeuralNetwork, trainingSet        []TrainingSam
 
 }
 
-type OfflineTrainer struct{}
-
-func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet        []TrainingSample){
-	panic("Not implemented yet")
+type OfflineTrainer struct{
+	BatchSize, Epoch int
 }
+
+//TODO: Here we have 2 functions that access two exported fields of the OfflineTrainer struct, but they are defined as methods of NeuralNetwork ( which can have other trainers as well)
+//TODO: Therefore, we need to make this more generic -- first time I used the reflect package, so this might not be the most optimal way of doing it
+func (n *NeuralNetwork) SetOfflineEpoch(epoch int64) {
+
+	x := reflect.ValueOf(n.trainer).Elem().FieldByName("Epoch")
+	x.SetInt(epoch)
+
+}
+
+func (n *NeuralNetwork) SetOfflineBatchSize(batchSize int64) {
+
+	x := reflect.ValueOf(n.trainer).Elem().FieldByName("BatchSize")
+	x.SetInt(batchSize)
+
+}
+
+func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet []TrainingSample){
+
+	// we need to loop through all the training samples, collect all the gradients and then update the weights
+
+	if n.debug {
+		fmt.Printf("Offline trainer start.\n")
+		fmt.Printf("epoch: %v, batchsize: %v\n", o.Epoch, o.BatchSize)
+	}
+
+	var _error, batchCount float32
+
+	// create a delta accumulator:
+	deltaAccumulator := make([][]float32, len(n.neuronLayers))
+
+	for i, layer := range n.neuronLayers {
+		deltaAccumulator[i] = make([]float32, len(layer.deltas))
+	}
+
+	// do n iterations - passed to this by the function arguments
+	for i:=0; i < o.Epoch; i++ {
+
+		j := 0 // mini batch
+		for _, currentTrainingSample := range trainingSet {
+
+			// feedForward gets us Neuron outputs as well
+			actual 	:= n.feedForward(currentTrainingSample.Input)
+			_error 	+= n.costFunction.calculateTotalError(actual, currentTrainingSample.Output)
+
+			// backPropagate changes to deltas[]float32 in NeuronLayers
+			n.backPropagate(currentTrainingSample.Output)
+
+			// now we need to store those deltas in delta_accumulator
+			for indexLayer, layer := range n.neuronLayers {
+				for indexDelta, delta := range layer.deltas {
+					// accumulates the initial value plus the newly backpropagated 'delta' value
+					deltaAccumulator[indexLayer][indexDelta] = deltaAccumulator[indexLayer][indexDelta] + delta
+
+				}
+			}
+
+
+			// mini batch counter j
+			j++
+			if (j == o.BatchSize ) {
+				batchCount++
+				// Take the average of each delta by dividing it with the batchSize
+				// if batchSize equals the length of training samples then we effectively have an offline trainer, or normal gradient descent
+				for indexLayer, layer := range n.neuronLayers {
+					for indexDelta, _ := range layer.deltas {
+						layer.deltas[indexDelta] = deltaAccumulator[indexLayer][indexDelta]/ float32( o.BatchSize )
+					}
+				}
+
+				if n.debug {
+					fmt.Printf("Epoch: %v, Batch number: %v Error: %v\n", i, batchCount, _error)
+
+				}
+				// update weights
+				n.updateWeightsFromDeltas()
+
+				// reset the deltas acumulators
+				for indexLayer, layerDeltas := range deltaAccumulator {
+					for indexDelta, _ := range layerDeltas {
+						deltaAccumulator[indexLayer][indexDelta] = 0
+					}
+
+				}
+
+				// reset total error
+				_error = 0
+				// reset j
+				j = 0
+			}
+		}
+	}
+}
+
 
 func (w *NeuralNetwork) propagate(inputConnections []*Connection) float32{
 	var result float32 = 0.0

@@ -174,6 +174,18 @@ func (n *NeuralNetwork)SetActivationFunction(activation Activation){
 	}
 }
 
+func (n *NeuralNetwork)GetActivationFunction() (function string) {
+	// Igor TODO: This is a ghetto way of getting to know which Activation Function is being used. I used it because I could not figure out how to get that information in some other way
+
+	if (n.activationFunction).min() == -1.0 {
+		function = "HyperbolicTangensActivationFunction"
+	} else {
+		function = "LogisticActivationFunction"
+	}
+
+	return
+}
+
 func (n *NeuralNetwork)SetNormalizer(normalizer NormalizerType){
 	switch normalizer {
 	case Zscore:
