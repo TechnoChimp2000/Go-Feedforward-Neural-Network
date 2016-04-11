@@ -7,15 +7,14 @@ this part of the package can store a trained network to a file, or load it from 
 
 	load_from_this_file := "/files/file.json"
 
-	network.SetLoadFileLocation(load_from_this_file)
-	n := network.LoadNetworkFromFile()
+	//network.SetLoadFileLocation(load_from_this_file)
+	n := network.LoadNetworkFromFile(load_from_this_file)
 
 2) Store trained network to a file (n --> trained NeuralNetwork )
 
 	save_to_this_file := "/files/file.json"
 
-	n.SetSaveFileLocation(save_to_this_file)
-	n.SaveToFile()
+	n.SaveToFile(save_to_this_file)
 
 */
 
@@ -27,6 +26,7 @@ import (
 
 )
 
+
 type storedNetwork struct {
 	Topology []int
 	UnrolledWeights []float32
@@ -34,19 +34,14 @@ type storedNetwork struct {
 	Biases []float32
 }
 
-var storedWeightFilepath string
 
-func (n *NeuralNetwork) SetSaveFileLocation ( filepath string ) {
-	storedWeightFilepath = filepath
-}
+func (n *NeuralNetwork) SaveToFile( fp string ) () {
 
-func SetLoadFileLocation ( filepath string ) {
-	storedWeightFilepath = filepath
+	// check for argument
 
-}
-
-
-func (n *NeuralNetwork) SaveToFile() () {
+	if len(fp) == 0  {
+		fmt.Printf("no argument")
+	}
 
 	// create a slice for weights
 	var weights []float32
@@ -92,13 +87,13 @@ func (n *NeuralNetwork) SaveToFile() () {
 	}
 
 	// store to a file
-	ioutil.WriteFile( storedWeightFilepath, b, 0644 )
+	ioutil.WriteFile( fp, b, 0644 )
 }
 
-func LoadNetworkFromFile() (n *NeuralNetwork) {
+func LoadNetworkFromFile( fp string ) (n *NeuralNetwork) {
 
 	//read the file
-	file, err := ioutil.ReadFile(storedWeightFilepath)
+	file, err := ioutil.ReadFile(fp)
 	if err != nil {
 		fmt.Printf("File Read error: %v\n", err)
 		os.Exit(1)
@@ -116,6 +111,8 @@ func LoadNetworkFromFile() (n *NeuralNetwork) {
 	} else {
 		n.SetActivationFunction(Logistic)
 	}
+
+
 
 	// insert all the weights to the appropriate connection
 	i := 0
@@ -139,3 +136,4 @@ func LoadNetworkFromFile() (n *NeuralNetwork) {
 
 	return n
 }
+
