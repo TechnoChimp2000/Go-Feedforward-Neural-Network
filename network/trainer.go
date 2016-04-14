@@ -246,10 +246,8 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) {
 			for indexNeuron, neuron := range n.neuronLayers[indexLayer].Neurons {
 				n.costFunction.calculateWeightDelta(n, neuron, indexNeuron, indexLayer, trainingSampleOutput)
 			}
-
 		}
 	}
-
 }
 
 func (n *NeuralNetwork) updateWeightsFromDeltas() {

@@ -22,8 +22,6 @@ type Neuron struct {
 type NeuronLayer struct{
 	Neurons []*Neuron
 	layer   uint8
-	//Bias    float32 // to be removed
-	deltas []float32 // to be removed
 }
 
 

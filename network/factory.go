@@ -15,7 +15,7 @@ func createNeuronLayer(neuronNumber int, bias float32) NeuronLayer{
 		neurons = append(neurons, new(Neuron))
 	}
 
-	return NeuronLayer{Neurons: neurons, deltas:make([]float32, neuronNumber)}
+	return NeuronLayer{Neurons: neurons}
 }
 
 func CreateNetwork(topology []int) (n *NeuralNetwork) {
@@ -43,14 +43,15 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 		}
 	}
 
-	// initialize weights, randomly between 0 and 1 and multiply it by epsilon
-	// since it's the same loop, we might as well define the []InputConnections there as well
+	// initialize weights and InputConnections
 	initializeWeightsAndInputConnections(neuronLayers)
+	// initialize a bias and delta of each neuron
 	initializeNeuronBiasAndDelta(neuronLayers)
 
 	// declare neural network
 	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers}
 
+	// set some default values for the created neural network
 	neuronNetwork.SetPrecision(Medium)
 	neuronNetwork.SetLearningRate(Normal)
 	neuronNetwork.SetTrainerMode(Online)
@@ -58,14 +59,8 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	neuronNetwork.SetNormalizer(Zscore)
 	neuronNetwork.SetCostFunction(CrossEntrophy)
 
-
-
 	return &neuronNetwork
 }
-
-
-
-
 
 
 func createRandomBiases(length int)[]float32{
@@ -93,6 +88,7 @@ func initializeWeightsAndInputConnections(neuronLayers []*NeuronLayer) {
 			continue
 		}
 		for _, neuronInThisLayer := range layer.Neurons {
+
 			for _, neuronInPreviousLayer := range neuronLayers[i-1].Neurons {
 				//weight := random.Float32()
 				weight := calculateWeight(neuronLayers[i-1])
@@ -113,12 +109,9 @@ func initializeNeuronBiasAndDelta(neuronLayers []*NeuronLayer) {
 			neuron.Bias	= createRandomBiases(1)[0]
 			neuron.Delta	= 0
 		}
-
-
 	}
 
 }
-
 
 /**
  * weight is from interval (−1,√d)(1,√d), where d is the number of inputs to a given neuron
@@ -128,7 +121,6 @@ func calculateWeight(layerFrom *NeuronLayer)float32{
 	numOfInputs := len(layerFrom.Neurons)
 	interval := 1 / float32(math.Sqrt(float64(numOfInputs)))
 	return calculateRandomNumInInterval(interval)
-	
 }
 
 func calculateRandomNumInInterval(interval float32)float32{
