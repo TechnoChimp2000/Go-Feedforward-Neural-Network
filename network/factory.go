@@ -8,7 +8,7 @@ import (
 )
 
 
-func createNeuronLayer(neuronNumber int, bias float32) NeuronLayer{
+func createNeuronLayer(neuronNumber int) NeuronLayer{
 
 	var neurons []*Neuron
 	for i :=0; i< neuronNumber; i++ {
@@ -25,11 +25,9 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	var neuronLayers []*NeuronLayer
 	// BUILD LAYERS and append them
 
-	biasUnits := createRandomBiases(len(topology))
+	for _, numberOfNeurons := range topology {
 
-	for i, numberOfNeurons := range topology {
-
-		layer := createNeuronLayer( numberOfNeurons , biasUnits[i] )
+		layer := createNeuronLayer( numberOfNeurons )
 		neuronLayers = append(neuronLayers, & layer)
 
 	}
@@ -60,19 +58,6 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	neuronNetwork.SetCostFunction(CrossEntrophy)
 
 	return &neuronNetwork
-}
-
-
-func createRandomBiases(length int)[]float32{
-
-	result := make([]float32, length)
-	for i := 0; i<length; i++{
-		if(i != length-1){
-			result[i] = random.Float32()
-			//result[i] = 1
-		}
-	}
-	return result
 }
 
 func initializeWeightsAndInputConnections(neuronLayers []*NeuronLayer) {
@@ -106,11 +91,10 @@ func initializeNeuronBiasAndDelta(neuronLayers []*NeuronLayer) {
 	for _, layer := range neuronLayers[1:] {
 		for _, neuron := range layer.Neurons {
 
-			neuron.Bias	= createRandomBiases(1)[0]
+			neuron.Bias	= 2*random.Float32()-1 // i want to generate the bias between -1 and 1.
 			neuron.Delta	= 0
 		}
 	}
-
 }
 
 /**

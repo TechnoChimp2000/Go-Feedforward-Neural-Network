@@ -10,11 +10,9 @@ type Connection struct{
 
 
 type Neuron struct {
-	// data
 	output			float32
 	InputConnections       	[]*Connection
 	ConnectedToInNextLayer 	[]*Neuron
-	// NEW STUFF
 	Bias 			float32
 	Delta 			float32
 }
@@ -145,11 +143,11 @@ func (n *NeuralNetwork)SetPrecision(precision Precision){
 func (n *NeuralNetwork)SetLearningRate(learningRate LearningRate){
 	switch learningRate {
 	case Fast:
-		n.learningRate = 0.01
-	case Normal:
 		n.learningRate = 0.02
+	case Normal:
+		n.learningRate = 0.01
 	case Slow:
-		n.learningRate = 0.000001
+		n.learningRate = 0.005
 	case VerySlow:
 		n.learningRate = 0.001
 	}

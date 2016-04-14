@@ -137,28 +137,6 @@ func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet []TrainingSample){
 			// backPropagate changes to deltas[]float32 in NeuronLayers
 			n.backPropagate(currentTrainingSample.Output)
 
-			// comparing old deltas to new deltas -- can be omitted
-			/*
-			if indexSample == 100 {
-				// old deltas
-				fmt.Println("Old deltas after indexSample:", indexSample)
-				for _, layer := range n.neuronLayers {
-					fmt.Println(layer.deltas )
-				}
-
-				// new deltas
-				fmt.Println("New Deltas:")
-				for _, layer := range n.neuronLayers {
-					for _, neuron := range layer.Neurons {
-						fmt.Printf("%v ", neuron.Delta)
-					}
-					fmt.Printf("\n")
-
-				}
-
-			}
-			*/
-
 			// storing deltas in the deltaAccumulator
 			for indexLayer, layer := range n.neuronLayers[1:] {
 				for indexNeuron, neuron := range layer.Neurons {
@@ -262,7 +240,12 @@ func (n *NeuralNetwork) updateWeightsFromDeltas() {
 				weightUpdated := inputConnection.Weight - n.learningRate * update * inputConnection.From.output
 
 				inputConnection.Weight = weightUpdated
+
+
 			}
+			// update bias
+
+			neuron.Bias -= n.learningRate * neuron.Delta
 		}
 	}
 }
