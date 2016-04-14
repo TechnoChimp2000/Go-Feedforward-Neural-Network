@@ -144,6 +144,5 @@ func LoadNetworkFromFile() (n *NeuralNetwork) {
 		}
 
 	}
-
 	return n
 }

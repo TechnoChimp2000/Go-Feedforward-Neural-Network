@@ -45,6 +45,7 @@ const (
 	Normal
 	Slow
 	VerySlow
+	Manual
 
 )
 
@@ -140,7 +141,7 @@ func (n *NeuralNetwork)SetPrecision(precision Precision){
 	}
 }
 
-func (n *NeuralNetwork)SetLearningRate(learningRate LearningRate){
+func (n *NeuralNetwork)SetLearningRate(learningRate LearningRate, manual float32){
 	switch learningRate {
 	case Fast:
 		n.learningRate = 0.02
@@ -150,6 +151,8 @@ func (n *NeuralNetwork)SetLearningRate(learningRate LearningRate){
 		n.learningRate = 0.005
 	case VerySlow:
 		n.learningRate = 0.001
+	case Manual:
+		n.learningRate = manual
 	}
 }
 

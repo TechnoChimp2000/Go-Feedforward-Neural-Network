@@ -51,7 +51,7 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 
 	// set some default values for the created neural network
 	neuronNetwork.SetPrecision(Medium)
-	neuronNetwork.SetLearningRate(Normal)
+	neuronNetwork.SetLearningRate(Normal, 0 )
 	neuronNetwork.SetTrainerMode(Online)
 	neuronNetwork.SetActivationFunction(Logistic)
 	neuronNetwork.SetNormalizer(Zscore)
