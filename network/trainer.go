@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"fmt"
 	"reflect"
+//	"time"
 )
 
 type Trainer interface{
@@ -121,16 +122,21 @@ func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet []TrainingSample){
 
 	// create a delta accumulator:
 	deltaAccumulator := make([][]float32, len(n.neuronLayers))
-
 	for i, layer := range n.neuronLayers {
 		deltaAccumulator[i] = make([]float32, len(layer.deltas))
+	}
+
+	// create the NEW delta accumulator
+	deltaAccumulatorNEW := make([][]float32, len(n.neuronLayers)-1)
+	for i, layer := range n.neuronLayers[1:] {
+		deltaAccumulatorNEW[i] = make([]float32, len(layer.Neurons))
 	}
 
 	// do n iterations - passed to this by the function arguments
 	for i:=0; i < o.Epoch; i++ {
 
 		j := 0 // mini batch
-		for _, currentTrainingSample := range trainingSet {
+		for indexSample, currentTrainingSample := range trainingSet {
 
 			// feedForward gets us Neuron outputs as well
 			actual 	:= n.feedForward(currentTrainingSample.Input)
@@ -139,15 +145,43 @@ func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet []TrainingSample){
 			// backPropagate changes to deltas[]float32 in NeuronLayers
 			n.backPropagate(currentTrainingSample.Output)
 
+			// compare old deltas to new deltas after one training sample
+			if indexSample == 100 {
+				// old deltas
+				fmt.Println("Old deltas after indexSample:", indexSample)
+				for _, layer := range n.neuronLayers {
+					fmt.Println(layer.deltas )
+				}
+
+				// new deltas
+				fmt.Println("New Deltas:")
+				for _, layer := range n.neuronLayers {
+					for _, neuron := range layer.Neurons {
+						fmt.Printf("%v ", neuron.NewDelta)
+					}
+					fmt.Printf("\n")
+
+				}
+
+			}
+
 			// now we need to store those deltas in delta_accumulator
 			for indexLayer, layer := range n.neuronLayers {
 				for indexDelta, delta := range layer.deltas {
 					// accumulates the initial value plus the newly backpropagated 'delta' value
-					deltaAccumulator[indexLayer][indexDelta] = deltaAccumulator[indexLayer][indexDelta] + delta
+					deltaAccumulator[indexLayer][indexDelta] += delta
 
 				}
 			}
 
+			// storing deltas in NEW DELTA ACCUMULATOR
+			for indexLayer, layer := range n.neuronLayers[1:] {
+				for indexNeuron, neuron := range layer.Neurons {
+					// accumulates the initial value plus the newly backpropagated 'delta' value
+					deltaAccumulatorNEW[indexLayer][indexNeuron] += neuron.NewDelta
+
+				}
+			}
 
 			// mini batch counter j
 			j++
@@ -161,19 +195,43 @@ func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet []TrainingSample){
 					}
 				}
 
+				// NEW stuff, or new DELTAS
+
+				for indexLayer, layer := range n.neuronLayers[1:] {
+					for indexNeuron, neuron := range layer.Neurons {
+						neuron.NewDelta = deltaAccumulatorNEW[indexLayer][indexNeuron] / float32( o.BatchSize )
+					}
+				}
+
 				if n.debug {
 					fmt.Printf("Epoch: %v, Batch number: %v Error: %v\n", i, batchCount, _error)
-
 				}
+
+				// print original weights
+
 				// update weights
 				n.updateWeightsFromDeltas()
+
+				// print changed weights
+
+				//n.updateWeightsFromNewDeltas()
+
+				// print changed weights again
+
 
 				// reset the deltas acumulators
 				for indexLayer, layerDeltas := range deltaAccumulator {
 					for indexDelta, _ := range layerDeltas {
 						deltaAccumulator[indexLayer][indexDelta] = 0
 					}
+				}
 
+				// reset the NEW delta accumulators
+
+				for indexLayer := range deltaAccumulatorNEW {
+					for indexNeuron := range deltaAccumulatorNEW[indexLayer] {
+						deltaAccumulatorNEW[indexLayer][indexNeuron] = 0
+					}
 				}
 
 				// reset total error
@@ -214,8 +272,7 @@ func (n* NeuralNetwork) testNeuralNetwork(numSamples int, trainingSet        []T
 
 func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) {  // deltas[indexLayer][indexNeuron]
 
-
-
+	// OLD BACKPROPAGATE - which changes old deltas
 	for i := len(n.neuronLayers) - 1; i > 0; i-- {
 		/**
 		 * processing last layer of neuron connections
@@ -240,6 +297,24 @@ func (n *NeuralNetwork) backPropagate(trainingSampleOutput []float32) {  // delt
 		}
 	}
 
+	// NEW BACKPROPAGATION - which will change the deltas of all the neurons.
+	for indexLayer := len(n.neuronLayers) - 1; indexLayer > 0; indexLayer-- {
+		// last layer, or output layer
+		if(indexLayer == len(n.neuronLayers) - 1){
+
+			for indexNeuron, neuron := range n.neuronLayers[indexLayer].Neurons {
+				n.costFunction.calculateWeightDeltaInLastLayerNEW(n, neuron, indexNeuron, indexLayer, trainingSampleOutput)
+
+			}
+
+		} /* other layers */else {
+			for indexNeuron, neuron := range n.neuronLayers[indexLayer].Neurons {
+				n.costFunction.calculateWeightDeltaNEW(n, neuron, indexNeuron, indexLayer, trainingSampleOutput)
+			}
+
+		}
+	}
+
 }
 
 func (n *NeuralNetwork) updateWeightsFromDeltas() {
@@ -250,6 +325,24 @@ func (n *NeuralNetwork) updateWeightsFromDeltas() {
 
 
 				update := n.neuronLayers[indexLayer].deltas[indexNeuron]
+
+				weightUpdated := inputConnection.Weight - n.learningRate * update * inputConnection.From.output
+
+				inputConnection.Weight = weightUpdated
+			}
+		}
+	}
+}
+
+
+func (n *NeuralNetwork) updateWeightsFromNewDeltas() {
+
+	for _, layer := range n.neuronLayers[1:] {
+		for _, neuron := range layer.Neurons {
+			for _, inputConnection := range neuron.InputConnections {
+
+				update := neuron.NewDelta
+				//update := n.neuronLayers[indexLayer].deltas[indexNeuron]
 
 				weightUpdated := inputConnection.Weight - n.learningRate * update * inputConnection.From.output
 
@@ -318,6 +411,7 @@ func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 
 func (n *NeuralNetwork) calculateNeuronOutput(neuron *Neuron, neuronLayerIndex int){
 	propagation := n.propagate(neuron.InputConnections)
-	bias := n.neuronLayers[neuronLayerIndex - 1].Bias
+	//bias := n.neuronLayers[neuronLayerIndex - 1].Bias
+	bias := neuron.NewBias
 	neuron.output = n.activationFunction.Activate(propagation + bias * 1.0)
 }

@@ -1,7 +1,7 @@
 package network
 
 import (
-	"math/rand"
+	random "math/rand"
 	//"time"
 	"math"
 	//"fmt"
@@ -47,6 +47,7 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	// initialize weights, randomly between 0 and 1 and multiply it by epsilon
 	// since it's the same loop, we might as well define the []InputConnections there as well
 	initializeWeightsAndInputConnections(neuronLayers)
+	initializeNeuronBiasAndDelta(neuronLayers)
 
 	// declare neural network
 	neuronNetwork := NeuralNetwork{neuronLayers: neuronLayers}
@@ -63,13 +64,18 @@ func CreateNetwork(topology []int) (n *NeuralNetwork) {
 	return &neuronNetwork
 }
 
+
+
+
+
+
 func createRandomBiases(length int)[]float32{
 
 	result := make([]float32, length)
 	for i := 0; i<length; i++{
 		if(i != length-1){
-			//result[i] = random.Float32()
-			result[i] = 1
+			result[i] = random.Float32()
+			//result[i] = 1
 		}
 	}
 	return result
@@ -94,9 +100,24 @@ func initializeWeightsAndInputConnections(neuronLayers []*NeuronLayer) {
 				w := &Connection{From: neuronInPreviousLayer, To: neuronInThisLayer, Weight: weight}
 
 				neuronInThisLayer.InputConnections = append( neuronInThisLayer.InputConnections, w )
+
 			}
 		}
 	}
+}
+
+func initializeNeuronBiasAndDelta(neuronLayers []*NeuronLayer) {
+
+	for _, layer := range neuronLayers[1:] {
+		for _, neuron := range layer.Neurons {
+
+			neuron.NewBias	= createRandomBiases(1)[0]
+			neuron.NewDelta	= 0
+		}
+
+
+	}
+
 }
 
 
@@ -112,5 +133,5 @@ func calculateWeight(layerFrom *NeuronLayer)float32{
 }
 
 func calculateRandomNumInInterval(interval float32)float32{
-	return (rand.Float32()*interval*2)-interval
+	return (random.Float32()*interval*2)-interval
 }

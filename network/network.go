@@ -14,13 +14,16 @@ type Neuron struct {
 	output                 float32
 	InputConnections       []*Connection
 	ConnectedToInNextLayer []*Neuron
+	// NEW STUFF
+	NewBias float32
+	NewDelta float32
 }
 
 type NeuronLayer struct{
 	Neurons []*Neuron
 	layer   uint8
-	Bias    float32
-	deltas []float32
+	Bias    float32 // to be removed
+	deltas []float32 // to be removed
 }
 
 
@@ -148,7 +151,7 @@ func (n *NeuralNetwork)SetLearningRate(learningRate LearningRate){
 	case Normal:
 		n.learningRate = 0.02
 	case Slow:
-		n.learningRate = 0.005
+		n.learningRate = 0.000001
 	case VerySlow:
 		n.learningRate = 0.001
 	}

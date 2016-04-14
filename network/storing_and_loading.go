@@ -95,6 +95,8 @@ func (n *NeuralNetwork) SaveToFile() () {
 	ioutil.WriteFile( storedWeightFilepath, b, 0644 )
 }
 
+// maybe we should change this into CreateNetworkFromFile ( filepath string )
+
 func LoadNetworkFromFile() (n *NeuralNetwork) {
 
 	//read the file
