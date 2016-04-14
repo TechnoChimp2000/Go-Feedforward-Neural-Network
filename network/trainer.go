@@ -150,7 +150,7 @@ func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet []TrainingSample){
 				fmt.Println("New Deltas:")
 				for _, layer := range n.neuronLayers {
 					for _, neuron := range layer.Neurons {
-						fmt.Printf("%v ", neuron.NewDelta)
+						fmt.Printf("%v ", neuron.Delta)
 					}
 					fmt.Printf("\n")
 
@@ -163,7 +163,7 @@ func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet []TrainingSample){
 			for indexLayer, layer := range n.neuronLayers[1:] {
 				for indexNeuron, neuron := range layer.Neurons {
 					// accumulates the initial value plus the newly backpropagated 'delta' value
-					deltaAccumulator[indexLayer][indexNeuron] += neuron.NewDelta
+					deltaAccumulator[indexLayer][indexNeuron] += neuron.Delta
 
 				}
 			}
@@ -178,7 +178,7 @@ func (o *OfflineTrainer) train( n *NeuralNetwork, trainingSet []TrainingSample){
 
 				for indexLayer, layer := range n.neuronLayers[1:] {
 					for indexNeuron, neuron := range layer.Neurons {
-						neuron.NewDelta = deltaAccumulator[indexLayer][indexNeuron] / float32( o.BatchSize )
+						neuron.Delta = deltaAccumulator[indexLayer][indexNeuron] / float32( o.BatchSize )
 					}
 				}
 
@@ -258,7 +258,7 @@ func (n *NeuralNetwork) updateWeightsFromDeltas() {
 		for _, neuron := range layer.Neurons {
 			for _, inputConnection := range neuron.InputConnections {
 
-				update := neuron.NewDelta
+				update := neuron.Delta
 				//update := n.neuronLayers[indexLayer].deltas[indexNeuron]
 
 				weightUpdated := inputConnection.Weight - n.learningRate * update * inputConnection.From.output
@@ -326,6 +326,6 @@ func (n *NeuralNetwork) feedForward(trainingSampleInput []float32)[]float32{
 
 func (n *NeuralNetwork) calculateNeuronOutput(neuron *Neuron, neuronLayerIndex int){
 	propagation := n.propagate(neuron.InputConnections)
-	bias := neuron.NewBias
+	bias := neuron.Bias
 	neuron.output = n.activationFunction.Activate(propagation + bias * 1.0)
 }

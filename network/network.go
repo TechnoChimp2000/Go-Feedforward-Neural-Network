@@ -11,12 +11,12 @@ type Connection struct{
 
 type Neuron struct {
 	// data
-	output                 float32
-	InputConnections       []*Connection
-	ConnectedToInNextLayer []*Neuron
+	output			float32
+	InputConnections       	[]*Connection
+	ConnectedToInNextLayer 	[]*Neuron
 	// NEW STUFF
-	NewBias float32
-	NewDelta float32
+	Bias 			float32
+	Delta 			float32
 }
 
 type NeuronLayer struct{

@@ -29,7 +29,7 @@ func (q *QuadraticCostFunction) calculateWeightDeltaInLastLayer(n *NeuralNetwork
 
 	//n.neuronLayers[neuronLayerIndex-1].deltas[neuronIndex] = factor1 * factor2
 
-	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].NewDelta = factor1 * factor2
+	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].Delta = factor1 * factor2
 }
 
 func (q *QuadraticCostFunction) calculateWeightDelta(n *NeuralNetwork, neuron *Neuron, neuronIndex int, neuronLayerIndex int, trainingSampleOutput []float32) {
@@ -40,13 +40,13 @@ func (q *QuadraticCostFunction) calculateWeightDelta(n *NeuralNetwork, neuron *N
 
 		var weight float32 	= neuronInNextLayer.InputConnections[neuronIndex].Weight
 		//factor1 += n.neuronLayers[neuronLayerIndex].deltas[neuronInNextLayerIndex] * weight
-		factor1 += neuronInNextLayer.NewDelta * weight
+		factor1 += neuronInNextLayer.Delta * weight
 	}
 
 	factor2	:= n.activationFunction.Derivative(neuron.output)
 
 	//n.neuronLayers[neuronLayerIndex-1].deltas[neuronIndex] =  factor1 * factor2
-	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].NewDelta = factor1 * factor2
+	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].Delta = factor1 * factor2
 }
 
 
@@ -61,7 +61,7 @@ func (q *QuadraticCostFunction) calculateWeightDeltaInLastLayerNEW(n *NeuralNetw
 
 	//n.neuronLayers[neuronLayerIndex-1].deltas[neuronIndex] = factor1 * factor2
 
-	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].NewDelta = factor1 * factor2
+	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].Delta = factor1 * factor2
 }
 
 func (q *QuadraticCostFunction) calculateWeightDeltaNEW(n *NeuralNetwork, neuron *Neuron, neuronIndex int, neuronLayerIndex int, trainingSampleOutput []float32) {
@@ -72,13 +72,13 @@ func (q *QuadraticCostFunction) calculateWeightDeltaNEW(n *NeuralNetwork, neuron
 
 		var weight float32 	= neuronInNextLayer.InputConnections[neuronIndex].Weight
 		//factor1 += n.neuronLayers[neuronLayerIndex].deltas[neuronInNextLayerIndex] * weight
-		factor1 += neuronInNextLayer.NewDelta * weight
+		factor1 += neuronInNextLayer.Delta * weight
 	}
 
 	factor2	:= n.activationFunction.Derivative(neuron.output)
 
 	//n.neuronLayers[neuronLayerIndex-1].deltas[neuronIndex] =  factor1 * factor2
-	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].NewDelta = factor1 * factor2
+	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].Delta = factor1 * factor2
 }
 
 */

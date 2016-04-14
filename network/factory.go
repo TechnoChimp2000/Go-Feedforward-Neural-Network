@@ -110,8 +110,8 @@ func initializeNeuronBiasAndDelta(neuronLayers []*NeuronLayer) {
 	for _, layer := range neuronLayers[1:] {
 		for _, neuron := range layer.Neurons {
 
-			neuron.NewBias	= createRandomBiases(1)[0]
-			neuron.NewDelta	= 0
+			neuron.Bias	= createRandomBiases(1)[0]
+			neuron.Delta	= 0
 		}
 
 

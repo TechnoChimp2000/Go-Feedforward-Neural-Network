@@ -73,7 +73,7 @@ func (n *NeuralNetwork) SaveToFile() () {
 	var biases []float32
 	for _, layer := range n.neuronLayers[1:] {
 		for _, neuron := range layer.Neurons {
-			biases = append(biases, neuron.NewBias)
+			biases = append(biases, neuron.Bias)
 		}
 
 	}
@@ -139,7 +139,7 @@ func LoadNetworkFromFile() (n *NeuralNetwork) {
 
 	for _, layer := range n.neuronLayers[1:] {
 		for _, neuron := range layer.Neurons {
-			neuron.NewBias = sNetwork.Biases[i]
+			neuron.Bias = sNetwork.Biases[i]
 			i++
 		}
 
