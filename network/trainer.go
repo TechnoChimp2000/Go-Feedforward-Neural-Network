@@ -211,7 +211,6 @@ func (w *NeuralNetwork) propagate(inputConnections []*Connection) float32{
 		result += inputConnection.From.output * inputConnection.Weight
 		//fmt.Println(inputConnection.From.output, inputConnection.Weight)
 	}
-
 	return result
 }
 

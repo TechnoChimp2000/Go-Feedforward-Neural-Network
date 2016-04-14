@@ -15,11 +15,10 @@ func createNeuronLayer(neuronNumber int, bias float32) NeuronLayer{
 		neurons = append(neurons, new(Neuron))
 	}
 
-	return NeuronLayer{Neurons: neurons, Bias: bias, deltas:make([]float32, neuronNumber)}
+	return NeuronLayer{Neurons: neurons, deltas:make([]float32, neuronNumber)}
 }
 
 func CreateNetwork(topology []int) (n *NeuralNetwork) {
-
 
 	// EXAMPLE CreateNetwork ([]int{ 2, 2, 3}
 
