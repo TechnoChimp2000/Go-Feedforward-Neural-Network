@@ -66,8 +66,11 @@ func (n *NeuralNetwork) SaveToFile( fp string ) () {
 
 	// get biases
 	var biases []float32
-	for _, layer := range n.neuronLayers {
-		biases = append(biases, layer.Bias)
+	for _, layer := range n.neuronLayers[1:] {
+		for _, neuron := range layer.Neurons {
+			biases = append(biases, neuron.Bias)
+		}
+
 	}
 
 
@@ -90,7 +93,13 @@ func (n *NeuralNetwork) SaveToFile( fp string ) () {
 	ioutil.WriteFile( fp, b, 0644 )
 }
 
+<<<<<<< HEAD
 func LoadNetworkFromFile( fp string ) (n *NeuralNetwork) {
+=======
+// maybe we should change this into CreateNetworkFromFile ( filepath string )
+
+func LoadNetworkFromFile() (n *NeuralNetwork) {
+>>>>>>> NetworkRedefinitions
 
 	//read the file
 	file, err := ioutil.ReadFile(fp)
@@ -129,11 +138,13 @@ func LoadNetworkFromFile( fp string ) (n *NeuralNetwork) {
 	// insert all the biases to the appropriate layer
 	i = 0
 
-	for _, layer := range n.neuronLayers {
-		layer.Bias = sNetwork.Biases[i]
-		i++
-	}
+	for _, layer := range n.neuronLayers[1:] {
+		for _, neuron := range layer.Neurons {
+			neuron.Bias = sNetwork.Biases[i]
+			i++
+		}
 
+	}
 	return n
 }
 
