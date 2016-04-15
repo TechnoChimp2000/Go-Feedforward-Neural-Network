@@ -9,7 +9,7 @@ import (
 func TestFastLearningRate(t *testing.T){
 
 	network, trainingSamples := createSimpleNN()
-	network.SetLearningRate(Fast)
+	network.SetLearningRate(Fast,0)
 
 	network.Train(trainingSamples)
 	result := network.Calculate(trainingSamples[0].Input)
@@ -20,7 +20,7 @@ func TestFastLearningRate(t *testing.T){
 func TestNormalLearningRate(t *testing.T){
 
 	network, trainingSamples := createSimpleNN()
-	network.SetLearningRate(Normal)
+	network.SetLearningRate(Normal,0)
 
 	network.Train(trainingSamples)
 	result := network.Calculate(trainingSamples[0].Input)
@@ -31,7 +31,7 @@ func TestNormalLearningRate(t *testing.T){
 func TestSlowLearningRate(t *testing.T){
 
 	network, trainingSamples := createSimpleNN()
-	network.SetLearningRate(Slow)
+	network.SetLearningRate(Slow,0)
 
 	network.Train(trainingSamples)
 	result := network.Calculate(trainingSamples[0].Input)
@@ -42,7 +42,7 @@ func TestSlowLearningRate(t *testing.T){
 func TestVerySlowLearningRate(t *testing.T){
 
 	network, trainingSamples := createSimpleNN()
-	network.SetLearningRate(VerySlow)
+	network.SetLearningRate(VerySlow,0)
 
 	network.Train(trainingSamples)
 	result := network.Calculate(trainingSamples[0].Input)
