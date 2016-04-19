@@ -93,13 +93,8 @@ func (n *NeuralNetwork) SaveToFile( fp string ) () {
 	ioutil.WriteFile( fp, b, 0644 )
 }
 
-<<<<<<< HEAD
-func LoadNetworkFromFile( fp string ) (n *NeuralNetwork) {
-=======
-// maybe we should change this into CreateNetworkFromFile ( filepath string )
 
-func LoadNetworkFromFile() (n *NeuralNetwork) {
->>>>>>> NetworkRedefinitions
+func LoadNetworkFromFile( fp string ) (n *NeuralNetwork) {
 
 	//read the file
 	file, err := ioutil.ReadFile(fp)
