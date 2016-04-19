@@ -2,6 +2,7 @@ package network
 
 import "math"
 
+
 type CostFunction interface{
 	calculateTotalError(actual []float32, output []float32) float32
 	calculateWeightDeltaInLastLayer(n *NeuralNetwork, neuron *Neuron, neuronIndex int, neuronLayerIndex int, trainingSampleOutput []float32)

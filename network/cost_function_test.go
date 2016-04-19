@@ -110,7 +110,25 @@ func TestCalculateWeightDeltaQuadratic (t *testing.T) {
 
 }
 
+
 // CrossEnthropy
+func TestTotalErrorCrossEnthropy (t *testing.T) {
+
+	c := new(CrossEntrophyCostFunction)
+
+	actual := []float32{0.12, 0.90, 0.1, 0.00001} // network output this
+	output := []float32{0, 1, 0, 0} // correct output
+
+	retval := c.calculateTotalError(actual, output)
+	fmt.Println("Testing total error for the cross enthropy function: ", retval) //.08464112
+
+	if retval != .08464112 {
+		fmt.Println("Total error does not equal to .08464112")
+		t.Fail()
+
+	}
+}
+
 
 /*
 type CostFunction interface{
