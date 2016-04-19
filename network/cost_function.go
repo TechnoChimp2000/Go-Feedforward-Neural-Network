@@ -81,7 +81,7 @@ func (c *CrossEntrophyCostFunction) calculateWeightDelta(n *NeuralNetwork, neuro
 		factor1 += neuronInNextLayer.Delta * weight
 	}
 
-	factor2								:= n.activationFunction.Derivative(neuron.output)
+	factor2	:= n.activationFunction.Derivative(neuron.output)
 
-	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].Delta 	= factor1 * factor2
+	n.neuronLayers[neuronLayerIndex].Neurons[neuronIndex].Delta = factor1 * factor2
 }
