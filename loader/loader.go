@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"fmt"
 	"encoding/binary"
-	"github.com/Go-Feedforward-Neural-Network/network"
+	"Go-Feedforward-Neural-Network/network"
 )
 
 // this is a generic IDX loader that reads a file and returns it in a slice. Example of operation:
