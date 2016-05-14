@@ -50,18 +50,22 @@ func TestDigitsRecognition(t *testing.T){
 	fmt.Printf("Num of testing items: %v\n", len(test_data))
 
 	fmt.Printf("Training...\n")
+	//nn := CreateNetwork([]int{784, 30, 10})
 	nn := CreateNetwork([]int{784, 30, 10})
 
-	//trainingSet *TrainingSet, epochs int, miniBatchSize int, eta float32, testSet *TrainingSet
-	nn.Train(getTrainingSet(train_data), 30, 10, 3.0, getTrainingSet(test_data))
+
+	//nn.Train(GetTrainingSet(train_data), 30, 10, 0.1, GetTrainingSet(test_data))
+	nn.Train(getCustomTrainingSet(train_data, 5), 50, 5, 1.0, getCustomTrainingSet(train_data, 5))
 	fmt.Printf("Finished training.\n")
 
 }
 
-func getTrainingSet(training_data []network.TrainingSample)*TrainingSet{
-	trainingSamples := make ([]*TrainingSample, len(training_data))
-	for i,training_sample :=range(training_data){
-		trainingSamples[i] = &TrainingSample{Input: training_sample.Input, Output: training_sample.Output}
+
+
+func getCustomTrainingSet(training_data []network.TrainingSample, size int)*TrainingSet{
+	trainingSamples := make ([]*TrainingSample, size)
+	for i:=0;i<size;i++{
+		trainingSamples[i] = &TrainingSample{Input: training_data[i].Input, Output: training_data[i].Output}
 	}
 	return &TrainingSet{trainingSamples: trainingSamples}
 }

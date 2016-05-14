@@ -55,13 +55,19 @@ func (network *Network)Feedforward(input []float32)[]float32{
 	var result = input
 	for i,_ := range network.weights{
 		product := algebra.Multiply(network.weights[i], result)
-		result = algebra.Vectorize(sigmoid, algebra.AddVectors(product, network.biases[i]))
+		//result = algebra.Vectorize(sigmoid, algebra.AddVectors(product, network.biases[i]))
+		result = sigmoid(algebra.AddVectors(product, network.biases[i]))
+
 	}
 	return result
 }
 
-func sigmoid (input float32) float32 {
-	return float32(1.0/(1.0+math.Exp(-float64(input))))
+func sigmoid (input []float32) []float32 {
+	function :=  func(input float32) float32 {
+
+		return float32(1.0/(1.0+math.Exp(-float64(input))))
+	}
+	return algebra.Vectorize(function, input)
 }
 
 
@@ -123,7 +129,7 @@ func(network *Network)backPropagate(input, output []float32) ([][]float32, []*al
 		weightedInput := algebra.AddVectors(algebra.Multiply(network.weights[i], activation), network.biases[i])
 		weightedInputs[i] = weightedInput
 
-		activation = algebra.Vectorize(sigmoid, weightedInput)
+		activation = sigmoid(weightedInput)
 		activations[i+1] = activation
 
 	}
@@ -156,7 +162,7 @@ func sigmoidDerivative(x []float32)[]float32{
 
 
 	ones :=algebra.CreateArrayWithDefaultValue(len(x),1)
-	sig := algebra.Vectorize(sigmoid, x)
+	sig := sigmoid(x)
 	substraction := algebra.SubstractVectors(ones, sig)
 	return algebra.Hadamard(sig, substraction)
 
@@ -180,3 +186,4 @@ func(network *Network)evaluate(testSet *TrainingSet)int{
 
 	return successes
 }
+

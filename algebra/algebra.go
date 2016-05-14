@@ -75,7 +75,7 @@ func getMatrixColumn(colNum int, matrix *Matrix)[]float32{
 	return result
 }
 
-func CreateNormalizedMatrix(numOfRows int, numOfColumns int) *Matrix{
+/*func CreateNormalizedMatrix(numOfRows int, numOfColumns int) *Matrix{
 	normalizedVector := CreateNormalizedVector(numOfColumns * numOfRows)
 	z := 0
 	numbers := make([][]float32, numOfRows)
@@ -87,6 +87,17 @@ func CreateNormalizedMatrix(numOfRows int, numOfColumns int) *Matrix{
 		}
 
 
+	}
+	var result = &Matrix{numOfRows: numOfRows, numOfColumns: numOfColumns, numbers: numbers}
+	return result
+
+}*/
+
+func CreateNormalizedMatrix(numOfRows int, numOfColumns int) *Matrix{
+
+	numbers := make([][]float32, numOfRows)
+	for i := 0; i < numOfRows; i++ {
+		numbers[i] = CreateNormalizedVector(numOfColumns)
 	}
 	var result = &Matrix{numOfRows: numOfRows, numOfColumns: numOfColumns, numbers: numbers}
 	return result

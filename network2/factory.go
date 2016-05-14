@@ -2,6 +2,7 @@ package network2
 
 import "Go-Feedforward-Neural-Network/algebra"
 
+
 func CreateNetwork(topology []int)*Network{
 	weights := make ([]*algebra.Matrix, len(topology)-1)
 
@@ -26,3 +27,5 @@ func CreateNetwork(topology []int)*Network{
 	return network
 
 }
+
+
