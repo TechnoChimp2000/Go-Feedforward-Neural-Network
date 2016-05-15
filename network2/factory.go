@@ -23,7 +23,7 @@ func CreateNetwork(topology []int)*Network{
 		biases[index-1] = algebra.CreateNormalizedVector(value)
 	}
 
-	network := &Network{weights: weights, biases: biases}
+	network := &Network{weights: weights, biases: biases, costFunction:new(CrossEntrophyCostFunction), regularization: &L2Regularization{lambda: 5}}//CrossEntrophyCostFunction QuadraticCostFunction
 	return network
 
 }

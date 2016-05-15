@@ -45,7 +45,7 @@ func main(){
 	nn := network2.CreateNetwork([]int{784, 30, 10})
 
 
-	nn.Train(network2.GetTrainingSet(train_data), 30, 10, 0.2, network2.GetTrainingSet(test_data))
+	nn.Train(network2.GetTrainingSet(train_data), 30, 10, 0.01, network2.GetTrainingSet(test_data))
 
 	fmt.Printf("Finished training.\n")
 

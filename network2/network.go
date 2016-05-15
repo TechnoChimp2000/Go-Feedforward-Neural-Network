@@ -2,7 +2,7 @@ package network2
 
 import (
 	"Go-Feedforward-Neural-Network/algebra"
-	"math"
+
 	"math/rand"
 	"fmt"
 )
@@ -48,6 +48,8 @@ type TrainingSample struct{
 type Network struct{
 	weights []*algebra.Matrix
 	biases [][]float32
+	costFunction CostFunction
+	regularization Regularization
 }
 
 
@@ -56,26 +58,19 @@ func (network *Network)Feedforward(input []float32)[]float32{
 	for i,_ := range network.weights{
 		product := algebra.Multiply(network.weights[i], result)
 		//result = algebra.Vectorize(sigmoid, algebra.AddVectors(product, network.biases[i]))
-		result = sigmoid(algebra.AddVectors(product, network.biases[i]))
+		result = algebra.Sigmoid(algebra.AddVectors(product, network.biases[i]))
 
 	}
 	return result
 }
 
-func sigmoid (input []float32) []float32 {
-	function :=  func(input float32) float32 {
-
-		return float32(1.0/(1.0+math.Exp(-float64(input))))
-	}
-	return algebra.Vectorize(function, input)
-}
 
 
 func (network *Network)Train(trainingSet *TrainingSet, epochs int, miniBatchSize int, eta float32, testSet *TrainingSet){
 	for i:=0; i<epochs; i++{
 		miniBatches := trainingSet.GetRandomMiniBatches(miniBatchSize)
 		for j:=0; j<len(miniBatches);j++{
-			network.updateMiniBatch(miniBatches[j], eta)
+			network.updateMiniBatch(miniBatches[j], eta, len(trainingSet.trainingSamples))
 		}
 		if testSet !=nil && len(testSet.trainingSamples)>0 {
 			fmt.Printf("Epoch %d: %d / %d\n", i, network.evaluate(testSet), len(testSet.trainingSamples))
@@ -89,7 +84,7 @@ func (network *Network)Train(trainingSet *TrainingSet, epochs int, miniBatchSize
 
 
 
-func(network *Network)updateMiniBatch(miniBatch []*TrainingSample, eta float32){
+func(network *Network)updateMiniBatch(miniBatch []*TrainingSample, eta float32, trainingSetSize int){
 	nablaBiases := algebra.CreateZerofiedDoubleArray(network.biases)
 	nablaWeights := algebra.CreateZerofiedMatrices(network.weights)
 
@@ -109,7 +104,7 @@ func(network *Network)updateMiniBatch(miniBatch []*TrainingSample, eta float32){
 	/**
 	 * update weights
 	 */
-	network.weights = algebra.SubstractMatriceArrays(network.weights, algebra.MultiplyMatrixArrayWithNumber(nablaWeights, factor))
+	network.weights = algebra.SubstractMatriceArrays(algebra.MultiplyMatrixArrayWithNumber(network.weights, network.regularization.getRegularizationFactor(trainingSetSize,eta)), algebra.MultiplyMatrixArrayWithNumber(nablaWeights, factor))
 }
 
 
@@ -129,12 +124,13 @@ func(network *Network)backPropagate(input, output []float32) ([][]float32, []*al
 		weightedInput := algebra.AddVectors(algebra.Multiply(network.weights[i], activation), network.biases[i])
 		weightedInputs[i] = weightedInput
 
-		activation = sigmoid(weightedInput)
+		activation = algebra.Sigmoid(weightedInput)
 		activations[i+1] = activation
 
 	}
 
-	delta := algebra.Hadamard(costDerivative(activations[len(activations)-1], output), sigmoidDerivative(weightedInputs[len(weightedInputs)-1]))
+	//delta := algebra.Hadamard(costDerivative(activations[len(activations)-1], output), algebra.SigmoidDerivative(weightedInputs[len(weightedInputs)-1]))
+	delta := network.costFunction.calculateDelta(activations[len(activations)-1], output, weightedInputs[len(weightedInputs)-1])
 
 	nablaBiases[len(nablaBiases)-1] = delta
 
@@ -144,7 +140,7 @@ func(network *Network)backPropagate(input, output []float32) ([][]float32, []*al
 
 
 		weightedInput := weightedInputs[len(weightedInputs)-i]
-		sigDerivative := sigmoidDerivative(weightedInput)
+		sigDerivative := algebra.SigmoidDerivative(weightedInput)
 
 		delta = algebra.Hadamard(algebra.Multiply(algebra.TransposeMatrix(network.weights[len(network.weights)-i+1]), delta), sigDerivative)
 
@@ -157,16 +153,7 @@ func(network *Network)backPropagate(input, output []float32) ([][]float32, []*al
 }
 
 
-func sigmoidDerivative(x []float32)[]float32{
 
-
-
-	ones :=algebra.CreateArrayWithDefaultValue(len(x),1)
-	sig := sigmoid(x)
-	substraction := algebra.SubstractVectors(ones, sig)
-	return algebra.Hadamard(sig, substraction)
-
-}
 
 
 func costDerivative(activations, output []float32)[]float32{

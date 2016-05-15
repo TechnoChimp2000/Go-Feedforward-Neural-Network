@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 	"fmt"
+	"time"
 )
 
 type Matrix struct{
@@ -112,6 +113,7 @@ func CreateNormalizedVector(length int) []float32{
 	/**
 	 * randomize vector first
 	 */
+	rand.Seed(time.Now().UTC().UnixNano())
 	for i:=0; i<length; i++{
 		vector[i] = rand.Float32()
 	}
