@@ -51,11 +51,12 @@ func TestDigitsRecognition(t *testing.T){
 
 	fmt.Printf("Training...\n")
 	//nn := CreateNetwork([]int{784, 30, 10})
-	nn := CreateNetwork([]int{784, 30, 10})
+	network := CreateNetwork([]int{784, 30, 10})
+	network.SetRegularization(SkipRegularizationType, 0)
 
 
 	//nn.Train(GetTrainingSet(train_data), 30, 10, 0.1, GetTrainingSet(test_data))
-	nn.Train(getCustomTrainingSet(train_data, 5), 50, 5, 1.0, getCustomTrainingSet(train_data, 5))
+	network.Train(getCustomTrainingSet(train_data, 5), 50, 5, 0.1, getCustomTrainingSet(train_data, 5))
 	fmt.Printf("Finished training.\n")
 
 }

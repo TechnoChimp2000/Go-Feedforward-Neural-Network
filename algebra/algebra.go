@@ -1,9 +1,11 @@
 package algebra
 
 import (
-	"math"
+
 	"math/rand"
 	"fmt"
+	"time"
+"math"
 )
 
 type Matrix struct{
@@ -97,59 +99,54 @@ func CreateNormalizedMatrix(numOfRows int, numOfColumns int) *Matrix{
 
 	numbers := make([][]float32, numOfRows)
 	for i := 0; i < numOfRows; i++ {
-		numbers[i] = CreateNormalizedVector(numOfColumns)
+		numbers[i] = CreateVectorWithMeanAndStdDeviation(numOfColumns, 0,1.0/(float32)(math.Sqrt((float64)(numOfColumns))))
 	}
 	var result = &Matrix{numOfRows: numOfRows, numOfColumns: numOfColumns, numbers: numbers}
 	return result
 
 }
 
-/**
-* Z-scores normalized vector has mean 0 and standard deviation 1
-*/
-func CreateNormalizedVector(length int) []float32{
+
+func CreateVectorWithMeanAndStdDeviation(length int, mean float32, stdDeviation float32) []float32 {
+
 	vector := make([]float32, length)
 	/**
 	 * randomize vector first
 	 */
+	rand.Seed(time.Now().UTC().UnixNano())
 	for i:=0; i<length; i++{
-		vector[i] = rand.Float32()
+		vector[i] = (float32)(rand.NormFloat64())
 	}
 
 
-	var mean float32
-	for _, value := range vector {
-		mean = mean + value
-	}
+	result := make([]float32, len(vector))
+	oldMean := calculateMean(vector)
 
-	mean = mean/float32(len(vector))
+	oldStdDeviation := calculateStdDeviation(vector, oldMean)
 
-	var deviation float32
-
-	if len(vector) > 1 {
-
-
-		for _, value := range vector{
-			deviation = deviation + ((value - mean) * (value - mean)) / float32(len(vector) - 1)
-		}
-
-		deviation = float32(math.Sqrt(float64(deviation)))
-
-	}
-
-	var result =  make([]float32, len(vector))
-
-	if len(vector) > 1 && deviation!= 0{
-
-		for index, _ := range vector {
-			result[index] = (vector[index] - mean) / deviation
-		}
-
-	}else{
-		return vector
+	for i,_ :=range vector{
+		result[i] = (mean + ((vector[i] - oldMean)*(stdDeviation / oldStdDeviation)))
 	}
 	return result
+}
 
+func calculateMean(vector []float32)float32{
+	var sum float32
+	for _,value:=range vector{
+		sum+=value
+	}
+	mean := sum/(float32)(len(vector))
+	return mean
+}
+
+func calculateStdDeviation(vector []float32, mean float32)float32{
+	var sum2 float32
+	for _,value:=range vector{
+		sum2+=((value-mean)*(value-mean))
+	}
+	variance:=sum2/(float32)(len(vector))
+	stDev := (float32)(math.Sqrt((float64)(variance)))
+	return stDev
 }
 
 func Vectorize(function func(float32)float32, vector []float32) []float32{
