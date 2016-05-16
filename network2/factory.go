@@ -20,10 +20,12 @@ func CreateNetwork(topology []int)*Network{
 			continue
 		}
 
-		biases[index-1] = algebra.CreateNormalizedVector(value)
+		biases[index-1] = algebra.CreateVectorWithMeanAndStdDeviation(value, 0, 1)//CreateVectorWithMeanAndStdDeviation CreateNormalizedVector(value)
 	}
 
-	network := &Network{weights: weights, biases: biases, costFunction:new(CrossEntrophyCostFunction), regularization: &L2Regularization{lambda: 5}}//CrossEntrophyCostFunction QuadraticCostFunction
+	network := &Network{weights: weights, biases: biases}//, costFunction:new(CrossEntrophyCostFunction), regularization: &L2Regularization{lambda:5}
+	network.SetCostFunction(CrossEntrophy)
+	network.SetRegularization(L2RegularizationType, 5.0)
 	return network
 
 }

@@ -3,6 +3,7 @@ package algebra
 import (
 	"testing"
 	"fmt"
+	"math"
 )
 
 func TestMatrixMultiply(t *testing.T){
@@ -51,8 +52,24 @@ func TestMatrixWithVectorMultiply(t *testing.T){
 
 }
 
-func TestNormalizedVector(t *testing.T){
-	normalizedVector := CreateNormalizedVector(10)
+func TestCreateVectorWithMeanAndStdDeviation(t *testing.T){
+	normalizedVector := CreateVectorWithMeanAndStdDeviation(9,0, 1)
+
+	var sum float32
+	for _,value:=range normalizedVector{
+		sum+=value
+	}
+	mean := sum/(float32)(len(normalizedVector))
+	fmt.Printf("mean: ", mean)
+
+	var sum2 float32
+	for _,value:=range normalizedVector{
+		sum2+=((value-mean)*(value-mean))
+	}
+	variance:=sum2/(float32)(len(normalizedVector))
+	stDev := math.Sqrt((float64)(variance))
+	fmt.Printf("stDev: ", stDev)
+
 	fmt.Printf("Result: ", normalizedVector)
 }
 

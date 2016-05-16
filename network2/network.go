@@ -44,12 +44,44 @@ type TrainingSample struct{
 	Output []float32
 }
 
+type CostFunctionType int
+
+const (
+	CrossEntrophy CostFunctionType = iota
+	Quadratic
+)
+
+type RegularizationType int
+
+const (
+	L2RegularizationType RegularizationType = iota
+	SkipRegularizationType
+)
+
 
 type Network struct{
 	weights []*algebra.Matrix
 	biases [][]float32
 	costFunction CostFunction
 	regularization Regularization
+}
+
+func (network *Network)SetCostFunction(costFunction CostFunctionType){
+	switch costFunction {
+	case CrossEntrophy:
+		network.costFunction = new(CrossEntrophyCostFunction)
+	case Quadratic:
+		network.costFunction = new(QuadraticCostFunction)
+	}
+}
+
+func (network *Network)SetRegularization(regularization RegularizationType, value float32){
+	switch regularization {
+	case L2RegularizationType:
+		network.regularization = &L2Regularization{lambda:value}
+	case SkipRegularizationType:
+		network.regularization = &SkipRegularization{}
+	}
 }
 
 
