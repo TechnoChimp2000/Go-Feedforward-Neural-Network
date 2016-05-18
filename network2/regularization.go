@@ -2,21 +2,21 @@ package network2
 
 
 type Regularization interface{
-	getRegularizationFactor(trainingSetSize int, eta float32)float32
+	getRegularizationFactor(trainingSetSize int, eta float64)float64
 }
 
 type L2Regularization struct{
-	lambda float32
+	lambda float64
 }
 
-func(l *L2Regularization)getRegularizationFactor(trainingSetSize int, eta float32)float32{
+func(l *L2Regularization)getRegularizationFactor(trainingSetSize int, eta float64)float64{
 	//(1-eta*(lmbda/n)
-	return 1 - (eta*(l.lambda/(float32)(trainingSetSize)))
+	return 1 - (eta*(l.lambda/(float64)(trainingSetSize)))
 }
 
 type SkipRegularization struct{}
 
-func(s *SkipRegularization)getRegularizationFactor(trainingSetSize int, eta float32)float32{
+func(s *SkipRegularization)getRegularizationFactor(trainingSetSize int, eta float64)float64{
 	return 1
 }
 

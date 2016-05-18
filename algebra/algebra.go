@@ -9,49 +9,61 @@ import (
 )
 
 type Matrix struct{
-	numbers [][]float32
-	numOfColumns int
-	numOfRows int
+	Numbers      [][]float64
+	NumOfColumns int
+	NumOfRows    int
 }
 
 func (matrix *Matrix) String() string {
-	return fmt.Sprintf("", matrix.numbers)
+	return fmt.Sprintf("", matrix.Numbers)
 }
 
-func Multiply(matrix *Matrix, vector []float32)[]float32{
+func ReturnMatrixInSingleArray(matrix *Matrix)[]float32{
+	result := make([]float32, matrix.NumOfRows * matrix.NumOfColumns)
+
+	for i:=0; i<matrix.NumOfRows;i++{
+		for j:=0; j<matrix.NumOfColumns;j++{
+			result[i+ (j*matrix.NumOfRows)] = (float32)(matrix.Numbers[i][j])
+		}
+
+	}
+	return result
+}
+
+func Multiply(matrix *Matrix, vector []float64)[]float64{
 	matrix2 := createMatrixFromVector(vector)
 	product := MultiplyMatrices(matrix, matrix2)
 	return createVectorFromMatrix(product)
 }
 
-func createVectorFromMatrix(matrix *Matrix)[]float32{
-	vector :=make([]float32, matrix.numOfRows)
-	for i:=0; i<matrix.numOfRows;i++{
-		vector[i] = matrix.numbers[i][0]
+func createVectorFromMatrix(matrix *Matrix)[]float64{
+	vector :=make([]float64, matrix.NumOfRows)
+	for i:=0; i<matrix.NumOfRows;i++{
+		vector[i] = matrix.Numbers[i][0]
 	}
 	return vector
 }
 
-func createMatrixFromVector(vector []float32)*Matrix{
-	numbers := make([][]float32, len(vector))
+func createMatrixFromVector(vector []float64)*Matrix{
+	numbers := make([][]float64, len(vector))
 	for i := 0; i < len(vector); i++ {
-		numbers[i] = make([]float32, 1)
+		numbers[i] = make([]float64, 1)
 		numbers[i][0] = vector[i]
 	}
-	matrix :=&Matrix{numOfRows:len(vector), numOfColumns: 1, numbers: numbers}
+	matrix :=&Matrix{NumOfRows:len(vector), NumOfColumns: 1, Numbers: numbers}
 	return matrix
 }
 
 func MultiplyMatrices(matrix1, matrix2 *Matrix) *Matrix{
-	numbers := make([][]float32, matrix1.numOfRows)
-	for i := 0; i < matrix1.numOfRows; i++ {
-		numbers[i] = make([]float32, matrix2.numOfColumns)
+	numbers := make([][]float64, matrix1.NumOfRows)
+	for i := 0; i < matrix1.NumOfRows; i++ {
+		numbers[i] = make([]float64, matrix2.NumOfColumns)
 	}
-	var result = &Matrix{numOfRows: matrix1.numOfRows, numOfColumns: matrix2.numOfColumns, numbers: numbers}
-	for i:=0; i<matrix1.numOfRows; i++{
-		for j:=0; j<matrix2.numOfColumns; j++{
+	var result = &Matrix{NumOfRows: matrix1.NumOfRows, NumOfColumns: matrix2.NumOfColumns, Numbers: numbers}
+	for i:=0; i<matrix1.NumOfRows; i++{
+		for j:=0; j<matrix2.NumOfColumns; j++{
 			column := getMatrixColumn(j, matrix2)
-			result.numbers[i][j] = calculateMatrixNumber(matrix1.numbers[i], column)//
+			result.Numbers[i][j] = calculateMatrixNumber(matrix1.Numbers[i], column)//
 		}
 	}
 
@@ -59,19 +71,19 @@ func MultiplyMatrices(matrix1, matrix2 *Matrix) *Matrix{
 
 }
 
-func calculateMatrixNumber(row, column []float32)float32{
-	var result  float32
+func calculateMatrixNumber(row, column []float64)float64{
+	var result  float64
 	for i:=0; i<len(row); i++ {
 		result+=(row[i]*column[i])
 	}
 	return result
 }
 
-func getMatrixColumn(colNum int, matrix *Matrix)[]float32{
-	size := matrix.numOfRows
-	var result = make([]float32,size)
+func getMatrixColumn(colNum int, matrix *Matrix)[]float64{
+	size := matrix.NumOfRows
+	var result = make([]float64,size)
 	for i:=0; i<size; i++ {
-		result[i] = matrix.numbers[i][colNum]
+		result[i] = matrix.Numbers[i][colNum]
 	}
 
 	return result
@@ -80,9 +92,9 @@ func getMatrixColumn(colNum int, matrix *Matrix)[]float32{
 /*func CreateNormalizedMatrix(numOfRows int, numOfColumns int) *Matrix{
 	normalizedVector := CreateNormalizedVector(numOfColumns * numOfRows)
 	z := 0
-	numbers := make([][]float32, numOfRows)
+	numbers := make([][]float64, numOfRows)
 	for i := 0; i < numOfRows; i++ {
-		numbers[i] = make([]float32, numOfColumns)
+		numbers[i] = make([]float64, numOfColumns)
 		for j:=0; j<numOfColumns; j++{
 			numbers[i][j] = normalizedVector[z]
 			z++
@@ -97,29 +109,29 @@ func getMatrixColumn(colNum int, matrix *Matrix)[]float32{
 
 func CreateNormalizedMatrix(numOfRows int, numOfColumns int) *Matrix{
 
-	numbers := make([][]float32, numOfRows)
+	numbers := make([][]float64, numOfRows)
 	for i := 0; i < numOfRows; i++ {
-		numbers[i] = CreateVectorWithMeanAndStdDeviation(numOfColumns, 0,1.0/(float32)(math.Sqrt((float64)(numOfColumns))))
+		numbers[i] = CreateVectorWithMeanAndStdDeviation(numOfColumns, 0,1.0/(float64)(math.Sqrt((float64)(numOfColumns))))
 	}
-	var result = &Matrix{numOfRows: numOfRows, numOfColumns: numOfColumns, numbers: numbers}
+	var result = &Matrix{NumOfRows: numOfRows, NumOfColumns: numOfColumns, Numbers: numbers}
 	return result
 
 }
 
 
-func CreateVectorWithMeanAndStdDeviation(length int, mean float32, stdDeviation float32) []float32 {
+func CreateVectorWithMeanAndStdDeviation(length int, mean float64, stdDeviation float64) []float64 {
 
-	vector := make([]float32, length)
+	vector := make([]float64, length)
 	/**
 	 * randomize vector first
 	 */
 	rand.Seed(time.Now().UTC().UnixNano())
 	for i:=0; i<length; i++{
-		vector[i] = (float32)(rand.NormFloat64())
+		vector[i] = (float64)(rand.NormFloat64())
 	}
 
 
-	result := make([]float32, len(vector))
+	result := make([]float64, len(vector))
 	oldMean := calculateMean(vector)
 
 	oldStdDeviation := calculateStdDeviation(vector, oldMean)
@@ -130,27 +142,27 @@ func CreateVectorWithMeanAndStdDeviation(length int, mean float32, stdDeviation 
 	return result
 }
 
-func calculateMean(vector []float32)float32{
-	var sum float32
+func calculateMean(vector []float64)float64{
+	var sum float64
 	for _,value:=range vector{
 		sum+=value
 	}
-	mean := sum/(float32)(len(vector))
+	mean := sum/(float64)(len(vector))
 	return mean
 }
 
-func calculateStdDeviation(vector []float32, mean float32)float32{
-	var sum2 float32
+func calculateStdDeviation(vector []float64, mean float64)float64{
+	var sum2 float64
 	for _,value:=range vector{
 		sum2+=((value-mean)*(value-mean))
 	}
-	variance:=sum2/(float32)(len(vector))
-	stDev := (float32)(math.Sqrt((float64)(variance)))
+	variance:=sum2/(float64)(len(vector))
+	stDev := (float64)(math.Sqrt((float64)(variance)))
 	return stDev
 }
 
-func Vectorize(function func(float32)float32, vector []float32) []float32{
-	result := make([]float32, len(vector))
+func Vectorize(function func(float64)float64, vector []float64) []float64{
+	result := make([]float64, len(vector))
 
 	for i, value := range vector{
 		result[i] = function(value)
@@ -158,9 +170,9 @@ func Vectorize(function func(float32)float32, vector []float32) []float32{
 	return result
 }
 
-func MultiplyVectorArrayWithNumber(vectorArray [][]float32, number float32)[][]float32{
+func MultiplyVectorArrayWithNumber(vectorArray [][]float64, number float64)[][]float64{
 
-	result := make([][]float32, len(vectorArray))
+	result := make([][]float64, len(vectorArray))
 	for i := 0; i < len(vectorArray); i++ {
 		result[i] = MultiplyVectorsWithNumber(vectorArray [i], number)
 	}
@@ -168,8 +180,8 @@ func MultiplyVectorArrayWithNumber(vectorArray [][]float32, number float32)[][]f
 }
 
 
-func MultiplyVectorsWithNumber(vector []float32, number float32)[]float32{
-	result := make([]float32, len(vector))
+func MultiplyVectorsWithNumber(vector []float64, number float64)[]float64{
+	result := make([]float64, len(vector))
 
 	for i, value := range vector{
 		result[i] = (number * value)
@@ -178,8 +190,8 @@ func MultiplyVectorsWithNumber(vector []float32, number float32)[]float32{
 }
 
 
-func AddVectorArrays(vectorArray1, vectorArray2 [][]float32)[][]float32{
-	result := make([][]float32, len(vectorArray1))
+func AddVectorArrays(vectorArray1, vectorArray2 [][]float64)[][]float64{
+	result := make([][]float64, len(vectorArray1))
 
 	for i, _ := range vectorArray1{
 
@@ -189,8 +201,8 @@ func AddVectorArrays(vectorArray1, vectorArray2 [][]float32)[][]float32{
 
 }
 
-func Hadamard(vector1, vector2 []float32)[]float32{
-	result := make([]float32, len(vector1))
+func Hadamard(vector1, vector2 []float64)[]float64{
+	result := make([]float64, len(vector1))
 
 	for i, value := range vector1{
 		result[i] = value * vector2[i]
@@ -199,8 +211,8 @@ func Hadamard(vector1, vector2 []float32)[]float32{
 
 }
 
-func AddVectors(vector1, vector2 []float32)[]float32{
-	result := make([]float32, len(vector1))
+func AddVectors(vector1, vector2 []float64)[]float64{
+	result := make([]float64, len(vector1))
 
 	for i, value := range vector1{
 		result[i] = value + vector2[i]
@@ -209,8 +221,8 @@ func AddVectors(vector1, vector2 []float32)[]float32{
 
 }
 
-func SubstractVectorArrays(vectorArray1, vectorArray2 [][]float32)[][]float32{
-	result := make([][]float32, len(vectorArray1))
+func SubstractVectorArrays(vectorArray1, vectorArray2 [][]float64)[][]float64{
+	result := make([][]float64, len(vectorArray1))
 
 	for i, _ := range vectorArray1{
 
@@ -220,7 +232,7 @@ func SubstractVectorArrays(vectorArray1, vectorArray2 [][]float32)[][]float32{
 
 }
 
-func SubstractVectors(vector1, vector2 []float32)[]float32{
+func SubstractVectors(vector1, vector2 []float64)[]float64{
 
 	return AddVectors(vector1, MultiplyVectorsWithNumber(vector2, -1))
 
@@ -238,15 +250,15 @@ func AddMatriceArrays(matrixArray1, matrixArray2 []*Matrix)[]*Matrix{
 }
 
 func AddMatrices(matrix1, matrix2 *Matrix)*Matrix{
-	numbers := make([][]float32, matrix1.numOfRows)
-	for i := 0; i < matrix1.numOfRows; i++ {
-		numbers[i] = make([]float32, matrix1.numOfColumns)
+	numbers := make([][]float64, matrix1.NumOfRows)
+	for i := 0; i < matrix1.NumOfRows; i++ {
+		numbers[i] = make([]float64, matrix1.NumOfColumns)
 	}
-	var result = &Matrix{numOfRows: matrix1.numOfRows, numOfColumns: matrix1.numOfColumns, numbers: numbers}
-	for i:=0; i<matrix1.numOfRows; i++{
-		for j:=0; j<matrix1.numOfColumns; j++{
+	var result = &Matrix{NumOfRows: matrix1.NumOfRows, NumOfColumns: matrix1.NumOfColumns, Numbers: numbers}
+	for i:=0; i<matrix1.NumOfRows; i++{
+		for j:=0; j<matrix1.NumOfColumns; j++{
 
-			result.numbers[i][j] = matrix1.numbers[i][j] + matrix2.numbers[i][j]
+			result.Numbers[i][j] = matrix1.Numbers[i][j] + matrix2.Numbers[i][j]
 		}
 	}
 
@@ -268,7 +280,7 @@ func SubstractMatrices(matrix1, matrix2 *Matrix)*Matrix{
 	return AddMatrices(matrix1, MultiplyMatrixWithNumber(matrix2, -1))
 }
 
-func MultiplyMatrixArrayWithNumber(matrixArray []*Matrix, number float32)[]*Matrix{
+func MultiplyMatrixArrayWithNumber(matrixArray []*Matrix, number float64)[]*Matrix{
 
 	result := make([]*Matrix, len(matrixArray))
 
@@ -280,17 +292,17 @@ func MultiplyMatrixArrayWithNumber(matrixArray []*Matrix, number float32)[]*Matr
 
 }
 
-func MultiplyMatrixWithNumber(matrix *Matrix, number float32)*Matrix{
-	numbers := make([][]float32, matrix.numOfRows)
-	for i := 0; i < matrix.numOfRows; i++ {
-		numbers[i] = make([]float32, matrix.numOfColumns)
+func MultiplyMatrixWithNumber(matrix *Matrix, number float64)*Matrix{
+	numbers := make([][]float64, matrix.NumOfRows)
+	for i := 0; i < matrix.NumOfRows; i++ {
+		numbers[i] = make([]float64, matrix.NumOfColumns)
 	}
-	var result = &Matrix{numOfRows: matrix.numOfRows, numOfColumns: matrix.numOfColumns, numbers: numbers}
+	var result = &Matrix{NumOfRows: matrix.NumOfRows, NumOfColumns: matrix.NumOfColumns, Numbers: numbers}
 
-	for i:=0; i<matrix.numOfRows; i++{
-		for j:=0; j<matrix.numOfColumns; j++{
+	for i:=0; i<matrix.NumOfRows; i++{
+		for j:=0; j<matrix.NumOfColumns; j++{
 
-			result.numbers[i][j] = (number * matrix.numbers[i][j])
+			result.Numbers[i][j] = (number * matrix.Numbers[i][j])
 		}
 	}
 
@@ -302,33 +314,33 @@ func CreateZerofiedMatrices(values []*Matrix)[]*Matrix{
 	result := make([]*Matrix, len(values))
 
 	for j:=0; j<len(values); j++{
-		numbers := make([][]float32, values[j].numOfRows)
-		for i := 0; i < values[j].numOfRows; i++ {
-			numbers[i] = make([]float32, values[j].numOfColumns)
+		numbers := make([][]float64, values[j].NumOfRows)
+		for i := 0; i < values[j].NumOfRows; i++ {
+			numbers[i] = make([]float64, values[j].NumOfColumns)
 		}
-		result[j] = &Matrix{numOfRows: values[j].numOfRows, numOfColumns: values[j].numOfColumns, numbers: numbers}
+		result[j] = &Matrix{NumOfRows: values[j].NumOfRows, NumOfColumns: values[j].NumOfColumns, Numbers: numbers}
 	}
 
 	return result
 }
 
-func CreateZerofiedDoubleArray(values [][]float32)[][]float32{
-	result := make([][]float32, len(values))
+func CreateZerofiedDoubleArray(values [][]float64)[][]float64{
+	result := make([][]float64, len(values))
 	for i := 0; i < len(values); i++ {
-		result[i] = make([]float32, len(values[i]))
+		result[i] = make([]float64, len(values[i]))
 	}
 	return result
 }
 
-func CreateArrayWithDefaultValue(length int, value float32)[]float32{
-	result := make([]float32, length)
+func CreateArrayWithDefaultValue(length int, value float64)[]float64{
+	result := make([]float64, length)
 	for i := 0; i < length; i++ {
 		result[i] = value
 	}
 	return result
 }
 
-func MultiplyVectorWithTranspose(vector1, vector2 []float32)*Matrix{
+func MultiplyVectorWithTranspose(vector1, vector2 []float64)*Matrix{
 
 	createMatrixFromVector(vector1)
 
@@ -337,31 +349,31 @@ func MultiplyVectorWithTranspose(vector1, vector2 []float32)*Matrix{
 
 
 }
-func createTransposeMatrixFromVector(vector []float32)*Matrix{
-	numbers := make([][]float32, 1)
-	numbers[0] = make([]float32, len(vector))
+func createTransposeMatrixFromVector(vector []float64)*Matrix{
+	numbers := make([][]float64, 1)
+	numbers[0] = make([]float64, len(vector))
 	for i := 0; i < len(vector); i++ {
 		numbers[0][i] = vector[i]
 	}
-	matrix :=&Matrix{numOfRows:1, numOfColumns: len(vector), numbers: numbers}
+	matrix :=&Matrix{NumOfRows:1, NumOfColumns: len(vector), Numbers: numbers}
 	return matrix
 }
 
 func TransposeMatrix(matrix *Matrix)*Matrix{
-	numbers := make([][]float32, matrix.numOfColumns)
-	for i := 0; i < matrix.numOfColumns; i++ {
-		numbers[i] = make([]float32, matrix.numOfRows)
-		for j:=0; j<matrix.numOfRows;j++{
-			numbers[i][j] = matrix.numbers[j][i]
+	numbers := make([][]float64, matrix.NumOfColumns)
+	for i := 0; i < matrix.NumOfColumns; i++ {
+		numbers[i] = make([]float64, matrix.NumOfRows)
+		for j:=0; j<matrix.NumOfRows;j++{
+			numbers[i][j] = matrix.Numbers[j][i]
 		}
 
 	}
-	var result = &Matrix{numOfRows: matrix.numOfColumns, numOfColumns: matrix.numOfRows, numbers: numbers}
+	var result = &Matrix{NumOfRows: matrix.NumOfColumns, NumOfColumns: matrix.NumOfRows, Numbers: numbers}
 
 	return result
 }
 
-func GetIndexOfMaxValue(vector []float32)int{
+func GetIndexOfMaxValue(vector []float64)int{
 	index :=0
 	max := vector[0]
 	for i,value := range(vector){

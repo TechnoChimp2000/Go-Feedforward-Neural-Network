@@ -8,42 +8,42 @@ import (
 
 func TestMatrixMultiply(t *testing.T){
 
-	numbers1 := [][]float32{
-		[]float32{1, 2, 5},
-		[]float32{-1, -2, -4},
-		[]float32{0, 3, -3},
-		[]float32{4, 6, 7},
+	numbers1 := [][]float64{
+		[]float64{1, 2, 5},
+		[]float64{-1, -2, -4},
+		[]float64{0, 3, -3},
+		[]float64{4, 6, 7},
 	}
 
-	var matrix1 = &Matrix{numbers:numbers1, numOfRows:4, numOfColumns:3}
+	var matrix1 = &Matrix{Numbers:numbers1, NumOfRows:4, NumOfColumns:3}
 
-	numbers2 := [][]float32{
-		[]float32{8, 1, 2},
-		[]float32{9, 5, 10},
-		[]float32{11, -1, 12},
+	numbers2 := [][]float64{
+		[]float64{8, 1, 2},
+		[]float64{9, 5, 10},
+		[]float64{11, -1, 12},
 	}
 
-	var matrix2 = &Matrix{numbers:numbers2, numOfRows:3, numOfColumns:3}
+	var matrix2 = &Matrix{Numbers:numbers2, NumOfRows:3, NumOfColumns:3}
 
 	result := MultiplyMatrices(matrix1, matrix2)
-	for i := 0; i < result.numOfRows; i++ {
-		fmt.Printf("Result: ", result.numbers[i])
+	for i := 0; i < result.NumOfRows; i++ {
+		fmt.Printf("Result: ", result.Numbers[i])
 	}
 
 }
 
 func TestMatrixWithVectorMultiply(t *testing.T){
 
-	numbers1 := [][]float32{
-		[]float32{1, 2, 3},
-		[]float32{4, 5, 6},
-		[]float32{7, 8, 9},
-		[]float32{10, 11, 12},
+	numbers1 := [][]float64{
+		[]float64{1, 2, 3},
+		[]float64{4, 5, 6},
+		[]float64{7, 8, 9},
+		[]float64{10, 11, 12},
 	}
 
-	var matrix = &Matrix{numbers:numbers1, numOfRows:4, numOfColumns:3}
+	var matrix = &Matrix{Numbers:numbers1, NumOfRows:4, NumOfColumns:3}
 
-	vector := []float32{-2, 1, 0}
+	vector := []float64{-2, 1, 0}
 
 	result := Multiply(matrix, vector)
 
@@ -55,18 +55,18 @@ func TestMatrixWithVectorMultiply(t *testing.T){
 func TestCreateVectorWithMeanAndStdDeviation(t *testing.T){
 	normalizedVector := CreateVectorWithMeanAndStdDeviation(9,0, 1)
 
-	var sum float32
+	var sum float64
 	for _,value:=range normalizedVector{
 		sum+=value
 	}
-	mean := sum/(float32)(len(normalizedVector))
+	mean := sum/(float64)(len(normalizedVector))
 	fmt.Printf("mean: ", mean)
 
-	var sum2 float32
+	var sum2 float64
 	for _,value:=range normalizedVector{
 		sum2+=((value-mean)*(value-mean))
 	}
-	variance:=sum2/(float32)(len(normalizedVector))
+	variance:=sum2/(float64)(len(normalizedVector))
 	stDev := math.Sqrt((float64)(variance))
 	fmt.Printf("stDev: ", stDev)
 
@@ -78,19 +78,19 @@ func TestNormalizedMatrix(t *testing.T){
 	fmt.Printf("Result: ", normalizedMatrix)
 }
 
-func simpleFunction(input float32)float32{
+func simpleFunction(input float64)float64{
 	return input * 2;
 }
 
 func TestVectorize(t *testing.T){
-	vector := []float32{1,2,3}
+	vector := []float64{1,2,3}
 	result := Vectorize(simpleFunction, vector)
 	fmt.Printf("Result: ", result)
 }
 
 func TestAddVectors(t *testing.T){
-	vector1 := []float32{1,2,3}
-	vector2 := []float32{2,4,6}
+	vector1 := []float64{1,2,3}
+	vector2 := []float64{2,4,6}
 	result := AddVectors(vector1, vector2)
 	fmt.Printf("Result: ", result)
 
@@ -98,22 +98,22 @@ func TestAddVectors(t *testing.T){
 
 func TestCreateZerofiedMatrices(t *testing.T){
 
-	numbers1 := [][]float32{
-		[]float32{1, 2, 5},
-		[]float32{-1, -2, -4},
-		[]float32{0, 3, -3},
-		[]float32{4, 6, 7},
+	numbers1 := [][]float64{
+		[]float64{1, 2, 5},
+		[]float64{-1, -2, -4},
+		[]float64{0, 3, -3},
+		[]float64{4, 6, 7},
 	}
 
-	var matrix1 = &Matrix{numbers:numbers1, numOfRows:4, numOfColumns:3}
+	var matrix1 = &Matrix{Numbers:numbers1, NumOfRows:4, NumOfColumns:3}
 
-	numbers2 := [][]float32{
-		[]float32{8, 1, 2},
-		[]float32{9, 5, 10},
-		[]float32{11, -1, 12},
+	numbers2 := [][]float64{
+		[]float64{8, 1, 2},
+		[]float64{9, 5, 10},
+		[]float64{11, -1, 12},
 	}
 
-	var matrix2 = &Matrix{numbers:numbers2, numOfRows:3, numOfColumns:3}
+	var matrix2 = &Matrix{Numbers:numbers2, NumOfRows:3, NumOfColumns:3}
 
 	matrices :=make([]*Matrix,2)
 	matrices[0] = matrix1
@@ -124,11 +124,11 @@ func TestCreateZerofiedMatrices(t *testing.T){
 }
 
 func TestCreateZerofiedDoubleArray(t *testing.T){
-	numbers := [][]float32{
-		[]float32{1, 2, 5},
-		[]float32{-1, -2, -4},
-		[]float32{0, 3, -3},
-		[]float32{4, 6, 7},
+	numbers := [][]float64{
+		[]float64{1, 2, 5},
+		[]float64{-1, -2, -4},
+		[]float64{0, 3, -3},
+		[]float64{4, 6, 7},
 	}
 
 	result := CreateZerofiedDoubleArray(numbers)
@@ -136,21 +136,21 @@ func TestCreateZerofiedDoubleArray(t *testing.T){
 }
 
 func TestAddMatrices(t *testing.T){
-	numbers1 := [][]float32{
-		[]float32{1, 2, 5},
-		[]float32{-1, -2, -4},
-		[]float32{0, 3, -3},
+	numbers1 := [][]float64{
+		[]float64{1, 2, 5},
+		[]float64{-1, -2, -4},
+		[]float64{0, 3, -3},
 	}
 
-	var matrix1 = &Matrix{numbers:numbers1, numOfRows:3, numOfColumns:3}
+	var matrix1 = &Matrix{Numbers:numbers1, NumOfRows:3, NumOfColumns:3}
 
-	numbers2 := [][]float32{
-		[]float32{8, 1, 2},
-		[]float32{9, 5, 10},
-		[]float32{11, -1, 12},
+	numbers2 := [][]float64{
+		[]float64{8, 1, 2},
+		[]float64{9, 5, 10},
+		[]float64{11, -1, 12},
 	}
 
-	var matrix2 = &Matrix{numbers:numbers2, numOfRows:3, numOfColumns:3}
+	var matrix2 = &Matrix{Numbers:numbers2, NumOfRows:3, NumOfColumns:3}
 
 	result := AddMatrices(matrix1, matrix2)
 	fmt.Printf("Result: ", result)
@@ -160,13 +160,13 @@ func TestAddMatrices(t *testing.T){
 func TestMultiplyMatrixWithNumber(t *testing.T){
 
 
-	numbers1 := [][]float32{
-		[]float32{1, 2, 5},
-		[]float32{-1, -2, -4},
-		[]float32{0, 3, -3},
+	numbers1 := [][]float64{
+		[]float64{1, 2, 5},
+		[]float64{-1, -2, -4},
+		[]float64{0, 3, -3},
 	}
 
-	var matrix1 = &Matrix{numbers:numbers1, numOfRows:3, numOfColumns:3}
+	var matrix1 = &Matrix{Numbers:numbers1, NumOfRows:3, NumOfColumns:3}
 
 	result := MultiplyMatrixWithNumber(matrix1, 2)
 
@@ -176,21 +176,21 @@ func TestMultiplyMatrixWithNumber(t *testing.T){
 
 func TestSubstractMatrices(t *testing.T){
 
-	numbers1 := [][]float32{
-		[]float32{1, 2, 5},
-		[]float32{-1, -2, -4},
-		[]float32{0, 3, -3},
+	numbers1 := [][]float64{
+		[]float64{1, 2, 5},
+		[]float64{-1, -2, -4},
+		[]float64{0, 3, -3},
 	}
 
-	var matrix1 = &Matrix{numbers:numbers1, numOfRows:3, numOfColumns:3}
+	var matrix1 = &Matrix{Numbers:numbers1, NumOfRows:3, NumOfColumns:3}
 
-	numbers2 := [][]float32{
-		[]float32{8, 1, 2},
-		[]float32{9, 5, 10},
-		[]float32{11, -1, 12},
+	numbers2 := [][]float64{
+		[]float64{8, 1, 2},
+		[]float64{9, 5, 10},
+		[]float64{11, -1, 12},
 	}
 
-	var matrix2 = &Matrix{numbers:numbers2, numOfRows:3, numOfColumns:3}
+	var matrix2 = &Matrix{Numbers:numbers2, NumOfRows:3, NumOfColumns:3}
 
 	result := SubstractMatrices(matrix1, matrix2)
 	fmt.Printf("Result: ", result)
@@ -199,7 +199,7 @@ func TestSubstractMatrices(t *testing.T){
 
 func TestMultiplyVectorsWithNumber(t *testing.T){
 
-	vector1 := []float32{1,2,3}
+	vector1 := []float64{1,2,3}
 	result := MultiplyVectorsWithNumber(vector1, 2)
 	fmt.Printf("Result: ", result)
 
@@ -207,16 +207,16 @@ func TestMultiplyVectorsWithNumber(t *testing.T){
 
 func TestSubstractVectors(t *testing.T){
 
-	vector1 := []float32{1,2,3}
-	vector2 := []float32{2,4,6}
+	vector1 := []float64{1,2,3}
+	vector2 := []float64{2,4,6}
 	result := SubstractVectors(vector1, vector2)
 	fmt.Printf("Result: ", result)
 
 }
 
 func TestHadamard(t *testing.T){
-	vector1 := []float32{1,2,3}
-	vector2 := []float32{2,4,6}
+	vector1 := []float64{1,2,3}
+	vector2 := []float64{2,4,6}
 	result := Hadamard(vector1, vector2)
 	fmt.Printf("Result: ", result)
 }
@@ -229,8 +229,8 @@ func TestCreateArrayWithDefaultValue(t *testing.T){
 
 func TestMultiplyVectorWithTranspose(t *testing.T){
 
-	vector1 := []float32{1,2,3}
-	vector2 := []float32{2,4,6}
+	vector1 := []float64{1,2,3}
+	vector2 := []float64{2,4,6}
 	result := MultiplyVectorWithTranspose(vector1, vector2)
 	fmt.Printf("Result: ", result)
 
@@ -238,14 +238,14 @@ func TestMultiplyVectorWithTranspose(t *testing.T){
 
 func TestTransposeMatrix(t *testing.T){
 
-	numbers1 := [][]float32{
-		[]float32{1, 2, 5},
-		[]float32{-1, -2, -4},
-		[]float32{0, 3, -3},
-		[]float32{4, 6, 7},
+	numbers1 := [][]float64{
+		[]float64{1, 2, 5},
+		[]float64{-1, -2, -4},
+		[]float64{0, 3, -3},
+		[]float64{4, 6, 7},
 	}
 
-	var matrix1 = &Matrix{numbers:numbers1, numOfRows:4, numOfColumns:3}
+	var matrix1 = &Matrix{Numbers:numbers1, NumOfRows:4, NumOfColumns:3}
 
 	result := TransposeMatrix(matrix1)
 	fmt.Printf("Result: ", result)
@@ -254,8 +254,24 @@ func TestTransposeMatrix(t *testing.T){
 
 func TestGetIndexOfMaxValue(t *testing.T){
 
-	vector1 := []float32{1,2,3,4,3,2,1}
+	vector1 := []float64{1,2,3,4,3,2,1}
 	result := GetIndexOfMaxValue(vector1)
+	fmt.Printf("Result: ", result)
+
+}
+
+func TestReturnMatrixInSingleArray(t *testing.T){
+
+	numbers1 := [][]float64{
+		[]float64{1, 2, 5},
+		[]float64{-1, -2, -4},
+		[]float64{0, 3, -3},
+		[]float64{4, 6, 7},
+	}
+
+	var matrix1 = &Matrix{Numbers:numbers1, NumOfRows:4, NumOfColumns:3}
+
+	result := ReturnMatrixInSingleArray(matrix1)
 	fmt.Printf("Result: ", result)
 
 }

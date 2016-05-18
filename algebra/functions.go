@@ -1,7 +1,7 @@
 package algebra
 import "math"
 
-func SigmoidDerivative(x []float32)[]float32{
+func SigmoidDerivative(x []float64)[]float64{
 
 
 
@@ -14,10 +14,10 @@ func SigmoidDerivative(x []float32)[]float32{
 
 
 
-func Sigmoid (input []float32) []float32 {
-	function :=  func(input float32) float32 {
+func Sigmoid (input []float64) []float64 {
+	function :=  func(input float64) float64 {
 
-		return float32(1.0/(1.0+math.Exp(-float64(input))))
+		return float64(1.0/(1.0+math.Exp(-float64(input))))
 	}
 	return Vectorize(function, input)
 }
