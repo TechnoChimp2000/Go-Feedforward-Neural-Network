@@ -12,7 +12,7 @@ func TestFeedforward(t *testing.T){
 	topology := []int{4,3,5, 6, 7}
 	network := CreateNetwork(topology)
 
-	input := []float32{3.14, 6, 7, 8, 8, 9}
+	input := []float64{3.14, 6, 7, 8, 8, 9}
 	result := network.Feedforward(input)
 	fmt.Printf("Result: ", result)
 }
@@ -66,7 +66,9 @@ func TestDigitsRecognition(t *testing.T){
 func getCustomTrainingSet(training_data []network.TrainingSample, size int)*TrainingSet{
 	trainingSamples := make ([]*TrainingSample, size)
 	for i:=0;i<size;i++{
-		trainingSamples[i] = &TrainingSample{Input: training_data[i].Input, Output: training_data[i].Output}
+		example := (float64)(training_data[i].Input[0])
+		fmt.Printf("ex: ", example)
+		trainingSamples[i] = &TrainingSample{Input: convertArray(training_data[i].Input), Output: convertArray(training_data[i].Output)}
 	}
 	return &TrainingSet{trainingSamples: trainingSamples}
 }

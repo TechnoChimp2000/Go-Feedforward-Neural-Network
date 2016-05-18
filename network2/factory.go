@@ -14,7 +14,7 @@ func CreateNetwork(topology []int)*Network{
 		weights[index-1] = weightMatrix
 	}
 
-	biases := make([][]float32, len(topology)-1)
+	biases := make([][]float64, len(topology)-1)
 	for index, value := range topology {
 		if index == 0 {
 			continue

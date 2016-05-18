@@ -43,6 +43,7 @@ func main(){
 	fmt.Printf("Training...\n")
 
 	nn := network2.CreateNetwork([]int{784, 30, 10})
+	nn.SetRegularization(network2.L2RegularizationType, 7.0)
 
 
 	nn.Train(network2.GetTrainingSet(train_data), 30, 10, 0.01, network2.GetTrainingSet(test_data))//30, 10, 0.01

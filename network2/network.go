@@ -40,8 +40,8 @@ func(trainingSet *TrainingSet)GetRandomMiniBatches(miniBatchSize int)[][]*Traini
 
 
 type TrainingSample struct{
-	Input  []float32
-	Output []float32
+	Input  []float64
+	Output []float64
 }
 
 type CostFunctionType int
@@ -61,7 +61,7 @@ const (
 
 type Network struct{
 	weights []*algebra.Matrix
-	biases [][]float32
+	biases [][]float64
 	costFunction CostFunction
 	regularization Regularization
 }
@@ -75,7 +75,7 @@ func (network *Network)SetCostFunction(costFunction CostFunctionType){
 	}
 }
 
-func (network *Network)SetRegularization(regularization RegularizationType, value float32){
+func (network *Network)SetRegularization(regularization RegularizationType, value float64){
 	switch regularization {
 	case L2RegularizationType:
 		network.regularization = &L2Regularization{lambda:value}
@@ -85,7 +85,7 @@ func (network *Network)SetRegularization(regularization RegularizationType, valu
 }
 
 
-func (network *Network)Feedforward(input []float32)[]float32{
+func (network *Network)Feedforward(input []float64)[]float64{
 	var result = input
 	for i,_ := range network.weights{
 		product := algebra.Multiply(network.weights[i], result)
@@ -98,7 +98,7 @@ func (network *Network)Feedforward(input []float32)[]float32{
 
 
 
-func (network *Network)Train(trainingSet *TrainingSet, epochs int, miniBatchSize int, eta float32, testSet *TrainingSet){
+func (network *Network)Train(trainingSet *TrainingSet, epochs int, miniBatchSize int, eta float64, testSet *TrainingSet){
 	for i:=0; i<epochs; i++{
 		miniBatches := trainingSet.GetRandomMiniBatches(miniBatchSize)
 		for j:=0; j<len(miniBatches);j++{
@@ -116,7 +116,7 @@ func (network *Network)Train(trainingSet *TrainingSet, epochs int, miniBatchSize
 
 
 
-func(network *Network)updateMiniBatch(miniBatch []*TrainingSample, eta float32, trainingSetSize int){
+func(network *Network)updateMiniBatch(miniBatch []*TrainingSample, eta float64, trainingSetSize int){
 	nablaBiases := algebra.CreateZerofiedDoubleArray(network.biases)
 	nablaWeights := algebra.CreateZerofiedMatrices(network.weights)
 
@@ -126,7 +126,7 @@ func(network *Network)updateMiniBatch(miniBatch []*TrainingSample, eta float32, 
 		nablaWeights = algebra.AddMatriceArrays(nablaWeights, deltaNablaWeights)
 	}
 
-	factor := eta/(float32)(len(miniBatch))
+	factor := eta/(float64)(len(miniBatch))
 
 	/**
 	 * update biases
@@ -140,12 +140,12 @@ func(network *Network)updateMiniBatch(miniBatch []*TrainingSample, eta float32, 
 }
 
 
-func(network *Network)backPropagate(input, output []float32) ([][]float32, []*algebra.Matrix){
+func(network *Network)backPropagate(input, output []float64) ([][]float64, []*algebra.Matrix){
 
 	nablaBiases := algebra.CreateZerofiedDoubleArray(network.biases)
 	nablaWeights := algebra.CreateZerofiedMatrices(network.weights)
 
-	activations := make([][]float32, len(network.biases)+1)
+	activations := make([][]float64, len(network.biases)+1)
 	activations[0] = input
 
 	weightedInputs := algebra.CreateZerofiedDoubleArray(network.biases)
@@ -188,7 +188,7 @@ func(network *Network)backPropagate(input, output []float32) ([][]float32, []*al
 
 
 
-func costDerivative(activations, output []float32)[]float32{
+func costDerivative(activations, output []float64)[]float64{
 	return algebra.SubstractVectors(activations, output)
 }
 
