@@ -7,6 +7,6 @@ import (
 
 
 func TestTest(t *testing.T){
-	TestAddition()
-	TestCountDevices()
+	/*TestAddition()
+	TestCountDevices()*/
 }

@@ -30,6 +30,24 @@ func ReturnMatrixInSingleArray(matrix *Matrix)[]float32{
 	return result
 }
 
+func ReturnMatrixFromSingleArray(numOfRows int, numOfColumns int, numbers []float32)*Matrix{
+	resultNumbers := make([][]float64, numOfColumns)
+	counter := 0
+	for i := 0; i < numOfColumns; i++ {
+		resultNumbers[i] = make([]float64, numOfRows)
+		for j:=0; j<numOfRows; j++{
+
+			resultNumbers[i][j] = (float64)(numbers[counter])
+			counter++;
+		}
+	}
+	var result = &Matrix{NumOfRows: numOfColumns, NumOfColumns: numOfRows, Numbers: resultNumbers}
+
+
+	return TransposeMatrix(result)
+
+}
+
 func Multiply(matrix *Matrix, vector []float64)[]float64{
 	matrix2 := createMatrixFromVector(vector)
 	product := MultiplyMatrices(matrix, matrix2)

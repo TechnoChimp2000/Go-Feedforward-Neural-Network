@@ -275,3 +275,21 @@ func TestReturnMatrixInSingleArray(t *testing.T){
 	fmt.Printf("Result: ", result)
 
 }
+
+func TestReturnMatrixFromSingleArray(t *testing.T){
+	numbers1 := [][]float64{
+		[]float64{1, 2, 5},
+		[]float64{-1, -2, -4},
+		[]float64{0, 3, -3},
+		[]float64{4, 6, 7},
+	}
+
+	var matrix1 = &Matrix{Numbers:numbers1, NumOfRows:4, NumOfColumns:3}
+
+	array := ReturnMatrixInSingleArray(matrix1)
+
+	result := ReturnMatrixFromSingleArray(4,3,array)
+
+	fmt.Printf("Result: ", result)
+
+}
