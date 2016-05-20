@@ -35,7 +35,7 @@ func MultiplyMatrices(matrix1, matrix2 *algebra.Matrix)*algebra.Matrix{
 
 	cResultMatrix := initializeResultCMatrix(matrix1, matrix2)
 
-	C.multiplyMatrices2(cMatrix1, cMatrix2, cResultMatrix)
+	C.multiplyMatrices(cMatrix1, cMatrix2, cResultMatrix)
 
 	goResultMatrix := createGoMatrix(cResultMatrix)
 
@@ -45,12 +45,19 @@ func MultiplyMatrices(matrix1, matrix2 *algebra.Matrix)*algebra.Matrix{
 
 }
 
-func MatricesMultiplication() {
-	/*C.matrices()
+func MultiplyMatrixWithVector(matrix *algebra.Matrix, vector []float32)[]float32{
+	cMatrix := createCMatrix(matrix)
+	cVector := createCVector(vector)
+	cResult := createEmptyCVector(len(vector))
 
-	fmt.Println("Done multiplying matrices")*/
+	C.multiplyMatrixWithVector(cMatrix, cVector, cResult)
+
+	return createGoVector(cResult, matrix.NumOfRows)
 
 }
+
+
+
 
 func createCMatrix(matrix *algebra.Matrix)*C.struct_Matrix{
 	array := algebra.ReturnMatrixInSingleArray(matrix)
@@ -60,6 +67,20 @@ func createCMatrix(matrix *algebra.Matrix)*C.struct_Matrix{
 
 	return (*C.struct_Matrix)(unsafe.Pointer(&cMatrix));
 
+}
+
+func createGoVector(cVector *C.float, length int)[]float32{
+	goNumbers :=  make([]float32, length) //(int)(resultNumOfRows) * (int)(resultNumOfColumns)
+	C.getNumbers(cVector, (*C.float)(&goNumbers[0]), (C.int)(length), 1)
+	return goNumbers
+}
+
+func createCVector(goVector []float32)*C.float{
+	return C.allocArray((C.int)(len(goVector)), (*C.float)(&goVector[0]))
+}
+
+func createEmptyCVector(length int)*C.float{
+	return C.allocEmptyArray((C.int)(length))
 }
 
 func createGoMatrix(cMatrix *C.struct_Matrix)*algebra.Matrix{

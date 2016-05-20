@@ -72,6 +72,62 @@ func TestMultiplyDigitsMatricesOnCPU(t *testing.T){
 
 }
 
+func TestMultiplyMatrixWithVector(t *testing.T){
+	numbers1 := [][]float64{
+		[]float64{1, 2, 3},
+		[]float64{4, 5, 6},
+		[]float64{7, 8, 9},
+		[]float64{10, 11, 12},
+	}
+
+	var matrix = &algebra.Matrix{Numbers:numbers1, NumOfRows:4, NumOfColumns:3}
+
+	vector := []float32{-2, 1, 0}
+
+	gpuResult := MultiplyMatrixWithVector(matrix, vector)
+
+	fmt.Printf("\n GPU result matrix with vector is: ", gpuResult)
+
+	cpuResult := algebra.Multiply(matrix, convert32to64(vector))
+
+	fmt.Printf("\n CPU result matrix with vector is: ", cpuResult)
+
+}
+
+func TestMultiplyBigMatrixWithVectorOnGPU(t *testing.T){
+	defer un(trace("TestMultiplyBigMatrixWithVectorOnGPU"))
+
+	var matrix = algebra.CreateNormalizedMatrix(1000,1000)
+	var vector = algebra.CreateVectorWithMeanAndStdDeviation(1000,0,1)
+	MultiplyMatrixWithVector(matrix, convert64to32(vector))
+
+}
+
+func TestMultiplyBigMatrixWithVectorOnCPU(t *testing.T){
+	defer un(trace("TestMultiplyBigMatrixWithVectorOnCPU"))
+
+	var matrix = algebra.CreateNormalizedMatrix(1000,1000)
+	var vector = algebra.CreateVectorWithMeanAndStdDeviation(10000,0,1)
+	algebra.Multiply(matrix, vector)
+
+}
+
+func convert64to32(input []float64)[]float32{
+	result := make([]float32, len(input))
+	for i,_ := range input{
+		result[i] = (float32)(input[i])
+	}
+	return result
+}
+
+func convert32to64(input []float32)[]float64{
+	result := make([]float64, len(input))
+	for i,_ := range input{
+		result[i] = (float64)(input[i])
+	}
+	return result
+}
+
 func trace(s string) (string, time.Time) {
 	log.Printf("trace start: %s\n", s)
 	return s, time.Now()

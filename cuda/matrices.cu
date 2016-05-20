@@ -11,6 +11,25 @@
 #include <thrust/copy.h>
 #include <vector>
 
+char* cublasGetErrorString(cublasStatus_t status)
+{
+    switch(status)
+    {
+        case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
+        case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
+        case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
+        case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
+        case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
+        case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
+        case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
+        case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
+    }
+    return "unknown error";
+}
+
+
+
+
 // Fill the array A(nr_rows_A, nr_cols_A) with random numbers on GPU
 void GPU_fill_rand(float *A, int nr_rows_A, int nr_cols_A) {
 	// Create a pseudo-random number generator
@@ -44,6 +63,43 @@ void gpu_blas_mmul(const float *A, const float *B, float *C, const int m, const 
 	cublasDestroy(handle);
 }
 
+void printArray(float *array ,int length){
+     std::cout << std::endl;
+      std::cout << "array: ";
+    for(int i = 0; i < length; ++i){
+        std::cout << array[i] << " ";
+    }
+}
+
+//y = α op(A)x + βy
+void gpu_blas_matrix_with_vector(const float *A, const float *v, float *result, const int m, const int n) {
+
+	const float alf = 1;
+	const float bet = 0;
+	const float *alpha = &alf;
+	const float *beta = &bet;
+//	char* resultStatus;
+
+
+	// Create a handle for CUBLAS
+	cublasHandle_t handle;
+	cublasCreate(&handle);
+
+
+	// Do the actual multiplication
+	// matrix - vector multiplication : d_y = al*d_a *d_x + bet *d_y
+    // d_a - mxn matrix ; d_x - n-vector , d_y - m- vector ;
+    // al ,bet - scalars
+    //cublasSgemv(handle,CUBLAS OP N,m,n,&al,d a,m,d x,1,&bet,d y,1);
+    /*resultStatus = cublasGetErrorString(cublasSgemv(handle,CUBLAS_OP_N,m,n,alpha,A,m,v,1,beta,result,1));
+     std::cout << "CUblas result: \n" << resultStatus;
+*/
+    cublasSgemv(handle,CUBLAS_OP_N,m,n,alpha,A,m,v,1,beta,result,1);
+
+	// Destroy the handle
+	cublasDestroy(handle);
+}
+
 
 //Print matrix A(nr_rows_A, nr_cols_A) storage in column-major format
 void print_matrix(const float *A, int nr_rows_A, int nr_cols_A) {
@@ -68,6 +124,7 @@ extern "C"{
         }
         return result;
     }
+
     void freeArr(float* p) { free(p); }
 
     float* allocEmptyArray(int ln) {
@@ -77,10 +134,9 @@ extern "C"{
     }
 
     void getNumbers(float *filled, float* empty, int numOfRows, int numOfColumns){
-     for (int i = 0; i < (numOfRows * numOfColumns); i++) {
-                    empty[i] = filled[i];
-      }
-
+         for (int i = 0; i < (numOfRows * numOfColumns); i++) {
+                        empty[i] = filled[i];
+          }
     }
 }
 
@@ -94,128 +150,16 @@ extern "C"{
 }
 
 void print_matrix_struct(Matrix *matrix) {
+     for(int i = 0; i < (matrix->numOfColumns * matrix->numOfRows); ++i){
+        std::cout << matrix->numbers[i] << " ";
 
- for(int i = 0; i < (matrix->numOfColumns * matrix->numOfRows); ++i){
-    std::cout << matrix->numbers[i] << " ";
-
- }
-
- std::cout << std::endl;
-
-
+     }
+     std::cout << std::endl;
 }
 
  extern "C" {
-    void matrices(void) {
-        // Allocate 3 arrays on CPU
-        int nr_rows_A, nr_cols_A, nr_rows_B, nr_cols_B, nr_rows_C, nr_cols_C;
 
-        // for simplicity we are going to use square arrays
-        nr_rows_A = nr_cols_A = nr_rows_B = nr_cols_B = nr_rows_C = nr_cols_C = 3;
-
-        float *h_A = (float *)malloc(nr_rows_A * nr_cols_A * sizeof(float));
-        float *h_B = (float *)malloc(nr_rows_B * nr_cols_B * sizeof(float));
-        float *h_C = (float *)malloc(nr_rows_C * nr_cols_C * sizeof(float));
-
-        // Allocate 3 arrays on GPU
-        float *d_A, *d_B, *d_C;
-        cudaMalloc(&d_A,nr_rows_A * nr_cols_A * sizeof(float));
-        cudaMalloc(&d_B,nr_rows_B * nr_cols_B * sizeof(float));
-        cudaMalloc(&d_C,nr_rows_C * nr_cols_C * sizeof(float));
-
-        // If you already have useful values in A and B you can copy them in GPU:
-        // cudaMemcpy(d_A,h_A,nr_rows_A * nr_cols_A * sizeof(float),cudaMemcpyHostToDevice);
-        // cudaMemcpy(d_B,h_B,nr_rows_B * nr_cols_B * sizeof(float),cudaMemcpyHostToDevice);
-
-        // Fill the arrays A and B on GPU with random numbers
-        GPU_fill_rand(d_A, nr_rows_A, nr_cols_A);
-        GPU_fill_rand(d_B, nr_rows_B, nr_cols_B);
-
-        // Optionally we can copy the data back on CPU and print the arrays
-        cudaMemcpy(h_A,d_A,nr_rows_A * nr_cols_A * sizeof(float),cudaMemcpyDeviceToHost);
-        cudaMemcpy(h_B,d_B,nr_rows_B * nr_cols_B * sizeof(float),cudaMemcpyDeviceToHost);
-        std::cout << "A =" << std::endl;
-        print_matrix(h_A, nr_rows_A, nr_cols_A);
-        std::cout << "B =" << std::endl;
-        print_matrix(h_B, nr_rows_B, nr_cols_B);
-
-        // Multiply A and B on GPU
-        gpu_blas_mmul(d_A, d_B, d_C, nr_rows_A, nr_cols_A, nr_cols_B);
-
-        // Copy (and print) the result on host memory
-        cudaMemcpy(h_C,d_C,nr_rows_C * nr_cols_C * sizeof(float),cudaMemcpyDeviceToHost);
-        std::cout << "C =" << std::endl;
-        print_matrix(h_C, nr_rows_C, nr_cols_C);
-
-        //Free GPU memory
-        cudaFree(d_A);
-        cudaFree(d_B);
-        cudaFree(d_C);
-
-        // Free CPU memory
-        free(h_A);
-        free(h_B);
-        free(h_C);
-
-        //return 0;
-    }
-
-    void multiplyMatrices(Matrix *matrix1, Matrix *matrix2, Matrix *resultMatrix) {
-           /* print_matrix_struct(matrix1);
-            print_matrix_struct(matrix2);*/
-
-            float *h_A = matrix1->numbers;
-            float *h_B = matrix2->numbers;
-            float *h_C = (float *)malloc(matrix1->numOfRows * matrix2->numOfColumns * sizeof(float));
-
-            // Allocate 3 arrays on GPU
-            float *d_A, *d_B, *d_C; //*d_A, *d_B,
-            cudaMalloc(&d_A,matrix1->numOfRows * matrix1->numOfColumns * sizeof(float));
-            cudaMalloc(&d_B,matrix2->numOfRows * matrix2->numOfColumns * sizeof(float));
-            cudaMalloc(&d_C,matrix1->numOfRows * matrix2->numOfColumns * sizeof(float));
-
-
-            // If you already have useful values in A and B you can copy them in GPU:
-            cudaMemcpy(d_A,h_A,matrix1->numOfRows * matrix1->numOfColumns * sizeof(float),cudaMemcpyHostToDevice);
-            cudaMemcpy(d_B,h_B,matrix2->numOfRows * matrix2->numOfColumns * sizeof(float),cudaMemcpyHostToDevice);
-
-
-            // Optionally we can copy the data back on CPU and print the arrays
-        /*    cudaMemcpy(h_A,d_A,matrix1->numOfRows * matrix1->numOfColumns * sizeof(float),cudaMemcpyDeviceToHost);
-            cudaMemcpy(h_B,d_B,matrix2->numOfRows * matrix2->numOfColumns * sizeof(float),cudaMemcpyDeviceToHost);
-            std::cout << "A =" << std::endl;
-            print_matrix(h_A, matrix1->numOfRows, matrix1->numOfColumns);
-            std::cout << "B =" << std::endl;
-            print_matrix(h_B, matrix2->numOfRows, matrix2->numOfColumns);*/
-
-            // Multiply A and B on GPU
-            gpu_blas_mmul(d_A, d_B, d_C, matrix1->numOfRows, matrix1->numOfColumns, matrix2->numOfColumns);
-
-            // Copy (and print) the result on host memory
-            cudaMemcpy(h_C,d_C,matrix1->numOfRows * matrix2->numOfColumns * sizeof(float),cudaMemcpyDeviceToHost);
-            /*std::cout << "C =" << std::endl;
-            print_matrix(h_C, matrix1->numOfRows, matrix2->numOfColumns);*/
-
-            //Free GPU memory
-            cudaFree(d_A);
-            cudaFree(d_B);
-            cudaFree(d_C);
-
-            // Free CPU memory
-            free(h_A);
-            free(h_B);
-//            free(h_C);
-
-            resultMatrix->numbers = h_C;
-            resultMatrix->numOfRows = matrix1->numOfRows;
-            resultMatrix->numOfColumns = matrix2->numOfColumns;
-
-
-
-            //return 0;
-        }
-
-        void multiplyMatrices2(Matrix *matrix1, Matrix *matrix2, Matrix *resultMatrix) {
+        void multiplyMatrices(Matrix *matrix1, Matrix *matrix2, Matrix *resultMatrix) {
 
                     thrust::device_vector<float> A(matrix1->numbers, matrix1->numbers+(matrix1->numOfRows * matrix1->numOfColumns));
                     thrust::device_vector<float> B(matrix2->numbers, matrix2->numbers+(matrix2->numOfRows * matrix2->numOfColumns));
@@ -226,15 +170,22 @@ void print_matrix_struct(Matrix *matrix) {
                     gpu_blas_mmul(thrust::raw_pointer_cast(&A[0]), thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]), matrix1->numOfRows, matrix1->numOfColumns, matrix2->numOfColumns);
 
 
-                 /*   std::vector<float> stl_vector(C.size());
-                    thrust::copy(C.begin(), C.end(), stl_vector.begin());*/
-
                     thrust::copy(C.begin(), C.end(), resultMatrix->numbers );
 
-
-//                    resultMatrix->numbers = stl_vector.data();
                     resultMatrix->numOfRows = matrix1->numOfRows;
                     resultMatrix->numOfColumns = matrix2->numOfColumns;
+
+         }
+
+         void multiplyMatrixWithVector(Matrix *matrix, float *vector, float *resultVector){
+
+             thrust::device_vector<float> A(matrix->numbers, matrix->numbers+(matrix->numOfRows * matrix->numOfColumns));
+             thrust::device_vector<float> v(vector, vector+matrix->numOfColumns);
+             thrust::device_vector<float> result(matrix->numOfRows);
+
+             gpu_blas_matrix_with_vector(thrust::raw_pointer_cast(&A[0]), thrust::raw_pointer_cast(&v[0]), thrust::raw_pointer_cast(&result[0]), matrix->numOfRows, matrix->numOfColumns);//matrix->numOfRows, matrix->numOfColumns
+
+             thrust::copy(result.begin(), result.end(), resultVector);
 
          }
 }
