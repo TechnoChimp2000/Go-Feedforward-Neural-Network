@@ -28,6 +28,25 @@ char* cublasGetErrorString(cublasStatus_t status)
 }
 
 
+struct sigmoid_functor
+{
+  __host__ __device__
+  float operator()(const float& x) const
+  {
+       return 1/(1.0 + expf(-x));
+  }
+};
+
+struct sigmoid_derivative_functor
+{
+  __host__ __device__
+  float operator()(const float& x) const
+  {
+       return expf(x)/powf((1.0 + expf(x)),2);
+  }
+};
+
+
 
 
 // Fill the array A(nr_rows_A, nr_cols_A) with random numbers on GPU
@@ -187,5 +206,23 @@ void print_matrix_struct(Matrix *matrix) {
 
              thrust::copy(result.begin(), result.end(), resultVector);
 
+         }
+
+         void applySigmoidOnVector(float *vector,float *resultVector, int size){
+             thrust::device_vector<float> v(vector, vector+size);
+             thrust::device_vector<float> result(size);
+
+             thrust::transform(v.begin(), v.end(), result.begin(), sigmoid_functor());
+
+             thrust::copy(result.begin(), result.end(), resultVector);
+         }
+
+         void applySigmoidDerivativeOnVector(float *vector,float *resultVector, int size){
+              thrust::device_vector<float> v(vector, vector+size);
+              thrust::device_vector<float> result(size);
+
+              thrust::transform(v.begin(), v.end(), result.begin(), sigmoid_derivative_functor());
+
+              thrust::copy(result.begin(), result.end(), resultVector);
          }
 }

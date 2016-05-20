@@ -7,6 +7,8 @@ struct Matrix{//typedef
 
 void multiplyMatrices(struct Matrix *matrix1, struct Matrix *matrix2, struct Matrix *resultMatrix);
 void multiplyMatrixWithVector(struct Matrix *matrix, float *vector, float *resultVector);
+void applySigmoidOnVector(float *vector,float *resultVector, int size);
+void applySigmoidDerivativeOnVector(float *vector,float *resultVector, int size);
 
 
 float* allocArray(int ln, float* values) ;

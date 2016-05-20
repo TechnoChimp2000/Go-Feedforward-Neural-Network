@@ -56,6 +56,28 @@ func MultiplyMatrixWithVector(matrix *algebra.Matrix, vector []float32)[]float32
 
 }
 
+func ApplySigmoidOnVector(input []float32)[]float32{
+
+	cVector := createCVector(input)
+	cResult := createEmptyCVector(len(input))
+
+	C.applySigmoidOnVector(cVector, cResult, (C.int)(len(input)))
+
+	return createGoVector(cResult, len(input))
+
+}
+
+func ApplySigmoidDerivativeOnVector(input []float32)[]float32{
+
+	cVector := createCVector(input)
+	cResult := createEmptyCVector(len(input))
+
+	C.applySigmoidDerivativeOnVector(cVector, cResult, (C.int)(len(input)))
+
+	return createGoVector(cResult, len(input))
+
+}
+
 
 
 

@@ -112,6 +112,34 @@ func TestMultiplyBigMatrixWithVectorOnCPU(t *testing.T){
 
 }
 
+func TestApplySigmoidOnVector(t *testing.T){
+
+	vector := []float32{-2, 1, 0}
+
+	gpuResult := ApplySigmoidOnVector(vector)
+
+	fmt.Printf("\n GPU result sigmoid on vector is: ", gpuResult)
+
+	cpuResult := algebra.Sigmoid(convert32to64(vector))
+
+	fmt.Printf("\n CPU result sigmoid on vector is: ", cpuResult)
+
+}
+
+func TestApplySigmoidDerivativeOnVector(t *testing.T){
+
+	vector := []float32{-2, 1, 0}
+
+	gpuResult := ApplySigmoidDerivativeOnVector(vector)
+
+	fmt.Printf("\n GPU result sigmoid derivative on vector is: ", gpuResult)
+
+	cpuResult := algebra.SigmoidDerivative(convert32to64(vector))
+
+	fmt.Printf("\n CPU result sigmoid on vector is: ", cpuResult)
+
+}
+
 func convert64to32(input []float64)[]float32{
 	result := make([]float32, len(input))
 	for i,_ := range input{
